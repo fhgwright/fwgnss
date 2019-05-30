@@ -22,15 +22,17 @@ from __future__ import absolute_import, print_function, division
 import collections
 import sys
 
-from .. import params as gnss
+from ..systems import generic
+from ..systems import glonass
+from ..systems import gps
 from ..datetime import xdatetime
 
 
 class Constants(object):  # pylint:disable=too-few-public-methods
   """Class which holds various constant definitions."""
 
-  SECONDS_PER_DAY = xdatetime.SECONDS_PER_DAY
-  SECONDS_PER_WEEK = xdatetime.SECONDS_PER_WEEK
+  SECONDS_PER_DAY = generic.Constants.SECONDS_PER_DAY
+  SECONDS_PER_WEEK = generic.Constants.SECONDS_PER_WEEK
   GPS_LEAPS = xdatetime.GPS_LEAP_OFFSET
 
   # System ID codes (NMEA and internal)
@@ -54,10 +56,10 @@ class Constants(object):  # pylint:disable=too-few-public-methods
   SIGNAL_NAMES = ('L1 C/A', 'L1P', 'L2P', 'G1', 'G2')
 
   # Wavelengths by signal type
-  GPS_L1_WAVELENGTH = gnss.GPS_L1_WAVELENGTH
-  GPS_L2_WAVELENGTH = gnss.GPS_L2_WAVELENGTH
-  GLO_L1_WAVELENGTHS = gnss.GLO_L1_WAVELENGTHS
-  GLO_L2_WAVELENGTHS = gnss.GLO_L2_WAVELENGTHS
+  GPS_L1_WAVELENGTH = gps.Constants.L1_WAVELENGTH
+  GPS_L2_WAVELENGTH = gps.Constants.L2_WAVELENGTH
+  GLO_L1_WAVELENGTHS = glonass.Constants.L1_WAVELENGTHS
+  GLO_L2_WAVELENGTHS = glonass.Constants.L2_WAVELENGTHS
   SIGNAL_WAVELENGTH = (
       GPS_L1_WAVELENGTH,
       GPS_L1_WAVELENGTH,
