@@ -8,7 +8,7 @@ Converts post-1970 entries from tai-utc.dat (stdin) to Python source (stdout).
 #                          fw@fwright.net
 #
 #        The information in this software is subject to change
-#   without notice and should not be construed as a commitment  #
+#   without notice and should not be construed as a commitment
 #   by Frederick H. G. Wright II, hereafter known as "author".
 #   The author makes no representations about the suitability
 #   of this software for any purpose.  It is supplied "As Is"
