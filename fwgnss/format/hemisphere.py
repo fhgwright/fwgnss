@@ -19,7 +19,6 @@
 
 from __future__ import absolute_import, print_function, division
 
-from .. import datadefs
 from . import generic
 from . import nmea
 from ..parse import hemisphere
@@ -169,14 +168,6 @@ class BinaryFormatter(generic.BinaryFormatter):
         self.Send(cur_indent, ', '.join(line1))
         self.Send(cur_indent + 2, ', '.join(line2))
         cur_indent = indent + 1
-
-  def _DumpSGLONASS_Strings(self,  # pylint: disable=invalid-name
-                            indent, nlist, dlist):
-    for name, data in zip(nlist, dlist):
-      bits = datadefs.BitString(
-          data.X85Bits, rpad=self.decoder.GLONASS_STRING_RPAD
-          )
-      self.DumpBitString(indent, name, bits)
 
   def _DumpSChannelData(self, indent, data):
     if self.fmt_level < self.FMT_UPDATED:
@@ -334,7 +325,7 @@ class BinaryFormatter(generic.BinaryFormatter):
     decoded = item.decoded
     self.Send(2, ('Slot %d, K number %+d, Ktag_ch = 0x%02X, Spare1 = 0x%.04x'
                   % (parsed.SV, decoded.knum, parsed.Ktag_ch, parsed.Spare1)))
-    self._DumpSGLONASS_Strings(4, self.decoder.BIN62_STRINGS, parsed.Strings)
+    self.DumpBitStrings(4, self.decoder.BIN62_STRINGS, decoded.strings)
   FORMATTER_DICT[PARSER.GetParser(62)] = FormatBin62
 
   def FormatBin65(self, item):
@@ -345,7 +336,7 @@ class BinaryFormatter(generic.BinaryFormatter):
                    + 'time received = %d')
                   % (parsed.SV, decoded.knum, parsed.Spare1,
                      parsed.TimeReceivedInSeconds)))
-    self._DumpSGLONASS_Strings(4, self.decoder.BIN65_STRINGS, parsed.Strings)
+    self.DumpBitStrings(4, self.decoder.BIN65_STRINGS, decoded.strings)
   FORMATTER_DICT[PARSER.GetParser(65)] = FormatBin65
 
   def FormatBin66(self, item):

@@ -806,6 +806,20 @@ class BinaryDecoder(binary.Decoder):
     pseudorange = cls._ComputePseudorange(pr_hi, pr_low, pr_ref_low)
     return l1ca_obs._replace(signal=signal, snr=snr, pseudorange=pseudorange)
 
+  _SGLONASS_MSB = 85
+  _SGLONASS_LSB = 9
+  _SGLONASS_RPAD = 3 * 32 - (_SGLONASS_MSB - _SGLONASS_LSB + 1)
+
+  @classmethod
+  def _DecodeSGLONASS_String(cls, string):  # pylint: disable=invalid-name
+    return datadefs.BitString(string.X85Bits, rpad=cls._SGLONASS_RPAD)
+
+  @classmethod
+  def GetGLONASS_Field(cls,  # pylint: disable=invalid-name
+                       data, lowbit, highbit):
+    """Extract field from GLONASS bitstring, given bit numbers."""
+    return data.GetRField(lowbit - cls._SGLONASS_LSB, highbit - lowbit + 1)
+
   DecBin1 = collections.namedtuple('dBin1', 'dtime speed track diff_age')
   def DecodeBin1(self, item):
     """Decode Bin1 message."""
@@ -848,19 +862,18 @@ class BinaryDecoder(binary.Decoder):
     return self.DecBin2(tracked, used, hdop, vdop, waas_tracked, waas_used)
   DECODER_DICT[BinaryParser.Bin2] = DecodeBin2
 
-  DecBin62 = collections.namedtuple('dBin62', 'knum')
+  DecBin62 = collections.namedtuple('dBin62', 'knum strings')
   def DecodeBin62(self, item):
     """Decode Bin62 message."""
     parsed = item.parsed
-    # K number (possibly offset) appears in bits 14:10 of odd almanac string
-    knum = ((parsed.Strings[1].X85Bits[2] >> 20) + 7 & 0x1F) - 7
+    strings = tuple(self._DecodeSGLONASS_String(x) for x in parsed.Strings)
+    # K number (possibly offset) appears in bits 10-14 of odd almanac string
+    knum = (self.GetGLONASS_Field(strings[1], 10, 14) + 7 & 0x1F) - 7
     self._SetKnum(parsed.SV, knum)
-    return self.DecBin62(knum)
+    return self.DecBin62(knum, strings)
   DECODER_DICT[BinaryParser.Bin62] = DecodeBin62
 
   BIN62_STRINGS = ['Almanac even', 'Almanac odd ', 'String 5    ']
-
-  GLONASS_STRING_RPAD = 3 * 32 - (85 - 8)
 
   SGLONASS_VALIDITY_BITS = [
       'Ephemeris available but timed out',
@@ -891,13 +904,14 @@ class BinaryDecoder(binary.Decoder):
       'has data (not yet validated)',
       ]
 
-  DecBin65 = collections.namedtuple('dBin65', 'knum')
+  DecBin65 = collections.namedtuple('dBin65', 'knum strings')
   def DecodeBin65(self, item):
     """Decode Bin65 message."""
     parsed = item.parsed
+    strings = tuple(self._DecodeSGLONASS_String(x) for x in parsed.Strings)
     knum = parsed.Ktag - 8
     self._SetKnum(parsed.SV, knum)
-    return self.DecBin65(knum)
+    return self.DecBin65(knum, strings)
   DECODER_DICT[BinaryParser.Bin65] = DecodeBin65
 
   BIN65_STRINGS = ['String %d' % (i + 1) for i in range(5)]

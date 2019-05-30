@@ -297,6 +297,11 @@ class BinaryFormatter(Formatter):
     digits = (bits.nbits + 3) // 4
     self.Send(indent, '%s: %0*X' % (name, digits, bits.data))
 
+  def DumpBitStrings(self, indent, nlist, dlist):
+    """Dump list of BitStrings labeled by list of names."""
+    for name, data in zip(nlist, dlist):
+      self.DumpBitString(indent, name, data)
+
   @staticmethod
   def FormatRawData(data, datalen, little_endian=False):
     """Format raw hex dump."""
