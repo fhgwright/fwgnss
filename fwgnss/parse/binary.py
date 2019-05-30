@@ -160,15 +160,3 @@ class Decoder(generic.Decoder):
       'signal snr track_time track_max slip_counter slip_warn '
       + 'wavelength pseudorange doppler phase'
       )
-
-  @staticmethod
-  def GetBitString(data, lpad=0, rpad=0):
-    """Convert array of longs to bitstring."""
-    total = 0
-    nbits = 0
-    for value in data:
-      total = (total << 32) | value
-      nbits += 32
-    total >>= rpad
-    nbits -= lpad + rpad
-    return total, nbits

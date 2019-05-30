@@ -19,6 +19,7 @@
 
 from __future__ import absolute_import, print_function, division
 
+from .. import datadefs
 from . import generic
 from . import nmea
 from ..parse import hemisphere
@@ -169,17 +170,13 @@ class BinaryFormatter(generic.BinaryFormatter):
         self.Send(cur_indent + 2, ', '.join(line2))
         cur_indent = indent + 1
 
-  def _DumpBitString(self, indent, name, value, nbits=0):
-    digits = (nbits + 3) // 4
-    self.Send(indent, '%s: %0*X' % (name, digits, value))
-
   def _DumpSGLONASS_Strings(self,  # pylint: disable=invalid-name
                             indent, nlist, dlist):
     for name, data in zip(nlist, dlist):
-      value, nbits = self.decoder.GetBitString(
+      bits = datadefs.BitString(
           data.X85Bits, rpad=self.decoder.GLONASS_STRING_RPAD
           )
-      self._DumpBitString(indent, name, value, nbits)
+      self.DumpBitString(indent, name, bits)
 
   def _DumpSChannelData(self, indent, data):
     if self.fmt_level < self.FMT_UPDATED:
