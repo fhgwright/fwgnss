@@ -54,9 +54,12 @@ class NmeaFormatter(nmea.Formatter):
     self.Send(2, 'For data at %s UTC:' % self.EncodeTime(decoded.time))
     if (decoded.lat_err or decoded.lon_err or decoded.alt_err
         or self.fmt_level < self.FMT_UPDATED):
-      self.Send(4, (('Expected latitude / longitude | altitude error = '
-                     + '%.3fm / %.3fm | %.3fm')
-                    % (decoded.lat_err, decoded.lon_err, decoded.alt_err)))
+      try:
+        self.Send(4, (('Expected latitude / longitude | altitude error = '
+                       + '%.3fm / %.3fm | %.3fm')
+                      % (decoded.lat_err, decoded.lon_err, decoded.alt_err)))
+      except TypeError:
+        pass
     if decoded.bad_sat:
       self.Send(4, (('%.1f%% probability that %s failed'
                      + ' with range bias of %.3fm +/- %.3fm')
