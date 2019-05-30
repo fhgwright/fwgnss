@@ -149,6 +149,18 @@ class TextItem(Item):
   __slots__ = ()
 
 
+class ResponseItem(Item):
+  """Base class for command-response extracted items."""
+
+  __slots__ = ()
+
+
+class TextResponseItem(ResponseItem, TextItem):
+  """Base class for text-based command-response extracted items."""
+
+  __slots__ = ()
+
+
 class Comment(TextItem):
   """Class for comment lines."""
   PREFIX_IN = b'#'

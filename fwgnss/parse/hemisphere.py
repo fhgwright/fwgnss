@@ -239,7 +239,7 @@ def _Checksum(data):
   return sum(bytearray(data))
 
 
-class Message(binary.Message):
+class Message(binary.BinaryDataItem):
   """Generic binary message item from extracter."""
 
   __slots__ = ()
