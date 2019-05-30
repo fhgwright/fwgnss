@@ -24,6 +24,7 @@ from __future__ import absolute_import, print_function, division
 import collections
 import math
 
+from .. import datadefs
 from . import binary
 from . import generic
 from . import nmea
@@ -1003,15 +1004,17 @@ class BinaryDecoder(binary.Decoder):
     return self.ObservationSet(dtime=dtime, sat_obs=tuple(sat_obs_list))
   DECODER_DICT[BinaryParser.Bin76] = DecodeBin76
 
-  DecBin80 = collections.namedtuple('dBin80', 'preamble type crc pad')
+  DecBin80 = collections.namedtuple('dBin80', 'preamble type crc pad data')
+  _BIN80_RPAD = 32 * 8 - 250
   def DecodeBin80(self, item):
     """Decode Bin80 message."""
     parsed = item.parsed
-    preamble = (parsed.WaasMsg[0] >> 24) & 0xFF
-    msgtype = (parsed.WaasMsg[0] >> 18) & 0x3F
-    crc = (parsed.WaasMsg[7] >> (32 * 8 - 250)) & 0xFFFFFF
-    pad = parsed.WaasMsg[7] & ((1 << (32 * 8 - 250)) - 1)
-    return self.DecBin80(preamble, msgtype, crc, pad)
+    data = datadefs.BitString(parsed.WaasMsg, rpad=self._BIN80_RPAD)
+    preamble = data.GetLField(0, 8)
+    msgtype = data.GetLField(8, 6)
+    crc = data.GetRField(0, 24)
+    pad = data.GetRpad()
+    return self.DecBin80(preamble, msgtype, crc, pad, data)
   DECODER_DICT[BinaryParser.Bin80] = DecodeBin80
 
   DecBin89 = collections.namedtuple('dBin89', 'sats tracked used data')
