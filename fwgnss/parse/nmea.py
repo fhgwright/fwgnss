@@ -589,7 +589,7 @@ class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
     return sat_type, sat_id
 
   DecGGA = collections.namedtuple(
-      'GGA',
+      'dGGA',
       'time lat lat_h lon lon_h num_sats hdop alt alt_u geoid geoid_u age'
       )
   def DecodeGGA(self, item):  # pylint: disable=too-many-locals
@@ -630,7 +630,7 @@ class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
       'S': 'Simulator',
   }
 
-  DecGLL = collections.namedtuple('GLL', 'time lat lat_h lon lon_h')
+  DecGLL = collections.namedtuple('dGLL', 'time lat lat_h lon lon_h')
   def DecodeGLL(self, item):
     """Decode xxGLL sentence."""
     parsed = item.parsed
@@ -641,7 +641,7 @@ class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
     return self.DecGLL(time, lat, lat_h, lon, lon_h)
   DECODER_DICT[Parser.ParseGLL] = DecodeGLL
 
-  DecVTG = collections.namedtuple('VTG', 'track_t track_m speed_n speed_k')
+  DecVTG = collections.namedtuple('dVTG', 'track_t track_m speed_n speed_k')
   def DecodeVTG(self, item):
     """Decode xxVTG sentence."""
     parsed = item.parsed
@@ -659,7 +659,7 @@ class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
       'K': 'Kph',
       }
 
-  DecZDA = collections.namedtuple('ZDA', 'time dtime zone')
+  DecZDA = collections.namedtuple('dZDA', 'time dtime zone')
   def DecodeZDA(self, item):
     """Decode xxZDA sentence."""
     parsed = item.parsed
@@ -673,7 +673,7 @@ class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
   DECODER_DICT[Parser.ParseZDA] = DecodeZDA
 
   DecRMC = collections.namedtuple(
-      'RMC',
+      'dRMC',
       'time dtime lat lat_h lon lon_h speed_n track_t mag_var mag_var_h'
       )
   def DecodeRMC(self, item):
@@ -701,7 +701,7 @@ class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
   }
 
   DecDTM = collections.namedtuple(
-      'DTM', 'latoff latoff_h lonoff lonoff_h altoff'
+      'dDTM', 'latoff latoff_h lonoff lonoff_h altoff'
       )
   def DecodeDTM(self, item):
     """Decode xxDTM sentence."""
@@ -891,7 +891,7 @@ class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
   DECODER_DICT[Parser.ParseGLGSV] = DecodeGSV
 
   DecGST = collections.namedtuple(
-      'GST',
+      'dGST',
       'time rms_err major_err minor_err major_dir lat_err lon_err alt_err'
       )
   def DecodeGST(self, item):
@@ -921,7 +921,7 @@ class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
                            value=float(sat_entry[1]))
 
   DecRRE = collections.namedtuple(
-      'RRE', 'num_used residuals horiz_err vert_err'
+      'dRRE', 'num_used residuals horiz_err vert_err'
       )
   def DecodeRRE(self, item):
     """Decode xxRRE sentence."""
