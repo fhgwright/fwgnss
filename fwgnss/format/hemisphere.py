@@ -50,34 +50,10 @@ class NmeaFormatter(nmea.Formatter):
   def FormatPSAT_GBS(self, item):  # pylint: disable=invalid-name
     """Format a PSAT,GBS sentence."""
     parsed = item.parsed
-    decoded = item.decoded
-    self.Send(2, 'For data at %s UTC:' % self.EncodeTime(decoded.time))
-    if (decoded.lat_err or decoded.lon_err or decoded.alt_err
-        or self.fmt_level < self.FMT_UPDATED):
-      try:
-        self.Send(4, (('Expected latitude / longitude | altitude error = '
-                       + '%.3fm / %.3fm | %.3fm')
-                      % (decoded.lat_err, decoded.lon_err, decoded.alt_err)))
-      except TypeError:
-        pass
-    if decoded.bad_sat:
-      self.Send(4, (('%.1f%% probability that %s failed'
-                     + ' with range bias of %.3fm +/- %.3fm')
-                    % (decoded.fault_prob, self.FormatSat(decoded.bad_sat),
-                       decoded.range_bias, decoded.range_bias_sd)))
-    elif self.fmt_level < self.FMT_UPDATED:
-      return
+    # This next item is the only difference from the GxGBS case
     status_list = ['HPR status = %s'
                    % self.DecodeChar(parsed.flag, self.decoder.GBS_FLAG_DECODE)]
-    if decoded.system:
-      status_list.append(' for system %s'
-                         % self.DecodeChar(decoded.system,
-                                           NmeaConstants.SYSTEM_DECODE))
-    if decoded.signal:
-      status_list.append(', signal %s'
-                         % self.DecodeChar(decoded.signal,
-                                           NmeaConstants.SIGNAL_DECODE))
-    self.Send(4, ''.join(status_list))
+    self.FormatGBS(item, extra=status_list)
   FORMATTER_DICT[PARSER.GetParser('PSAT', 'GBS')] = FormatPSAT_GBS
 
   def FormatRD1(self, item):

@@ -320,3 +320,35 @@ class Formatter(generic.Formatter):
     if decoded.residuals:
       self._DumpResiduals(4, decoded.residuals)
   FORMATTER_DICT[PARSER.GetParser('GPRRE')] = FormatRRE
+
+  def FormatGBS(self, item, extra=None):  # pylint: disable=invalid-name
+    """Format a GBS sentence."""
+    # The extra arg allows an insertion for the PSAT,GBS case
+    decoded = item.decoded
+    self.Send(2, 'For data at %s UTC:' % self.EncodeTime(decoded.time))
+    if (decoded.lat_err or decoded.lon_err or decoded.alt_err
+        or self.fmt_level < self.FMT_UPDATED):
+      try:
+        self.Send(4, (('Expected latitude / longitude | altitude error = '
+                       + '%.3fm / %.3fm | %.3fm')
+                      % (decoded.lat_err, decoded.lon_err, decoded.alt_err)))
+      except TypeError:
+        pass
+    if decoded.bad_sat:
+      self.Send(4, (('%.1f%% probability that %s failed'
+                     + ' with range bias of %.3fm +/- %.3fm')
+                    % (decoded.fault_prob, self.FormatSat(decoded.bad_sat),
+                       decoded.range_bias, decoded.range_bias_sd)))
+    elif self.fmt_level < self.FMT_UPDATED:
+      return
+    status_list = extra or []
+    if decoded.system:
+      status_list.append(' for system %s'
+                         % self.DecodeChar(decoded.system,
+                                           Constants.SYSTEM_DECODE))
+    if decoded.signal:
+      status_list.append(', signal %s'
+                         % self.DecodeChar(decoded.signal,
+                                           Constants.SIGNAL_DECODE))
+    self.Send(4, ''.join(status_list))
+  FORMATTER_DICT[PARSER.GetParser('GPGBS')] = FormatGBS

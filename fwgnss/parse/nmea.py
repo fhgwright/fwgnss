@@ -470,10 +470,24 @@ class Parser(generic.Parser):
           )
   NMEA_DICT['GPRRE'] = ParseRRE
 
+  class ParseGBS(ParseItem):
+    """Parser for GxGBS sentences."""
+    PARSED, MIN_LENGTH = MakeParser(
+        'GxGBS',
+        'time lat_err lon_err alt_err bad_sat fault_prob '
+        + 'range_bias range_bias_sd system signal'
+        )
+
+    @classmethod
+    def Parse(cls, item):
+      """Parse the GxGBS sentence."""
+      return cls.PARSED._make(item.data[1:11])
+  NMEA_DICT['GPGBS'] = ParseGBS
+
 Nmea.PARSE_CLASS = Parser
 
 
-class Decoder(generic.Decoder):
+class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
   """Class for NMEA item decoder."""
   DECODER_DICT = generic.Decoder.DECODER_DICT
 
@@ -923,3 +937,32 @@ class Decoder(generic.Decoder):
     return self.DecRRE(num_used=num_used, residuals=sat_list,
                        horiz_err=horiz_err, vert_err=vert_err)
   DECODER_DICT[Parser.ParseRRE] = DecodeRRE
+
+  DecGBS = collections.namedtuple(
+      'dGBS',
+      'time lat_err lon_err alt_err bad_sat '
+      + 'fault_prob range_bias range_bias_sd system signal'
+      )
+  def DecodeGBS(self, item):  # pylint: disable=too-many-locals
+    """Decode a GBS item (GxGBS or similar)."""
+    parsed = item.parsed
+    time = self.DecodeNmeaTime(parsed.time)
+    if not time:
+      return None
+    lat_err = self.DecodeFloat(parsed.lat_err)
+    lon_err = self.DecodeFloat(parsed.lon_err)
+    alt_err = self.DecodeFloat(parsed.alt_err)
+    bad_sat = self.DecodeInt(parsed.bad_sat)
+    sat_type, sat_num = self.DecodeSatNum(bad_sat)
+    bad_sat_view = (self.SatView(sat=bad_sat, type=sat_type, num=sat_num)
+                    if bad_sat else None)
+    fault_prob = self.DecodeFloat(parsed.fault_prob)
+    range_bias = self.DecodeFloat(parsed.range_bias)
+    range_bias_sd = self.DecodeFloat(parsed.range_bias_sd)
+    system = self.DecodeInt(parsed.system)
+    signal = self.DecodeInt(parsed.signal)
+    return self.DecGBS(
+        time, lat_err, lon_err, alt_err, bad_sat_view,
+        fault_prob, range_bias, range_bias_sd, system, signal
+        )
+  DECODER_DICT[Parser.ParseGBS] = DecodeGBS

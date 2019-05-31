@@ -73,8 +73,9 @@ class NmeaParser(nmea.Parser):
 
     class ParseGBS(nmea.Parser.ParseItem):
       """Parser for PSAT,GBS sentences."""
+      # This is almost like the GxGBS sentence, except for the added flag field
       PARSED, MIN_LENGTH = nmea.MakeParser(
-          'pGBS',
+          'pPSAT_GBS',
           'time lat_err lon_err alt_err bad_sat fault_prob '
           + 'range_bias range_bias_sd flag system signal'
           )
@@ -107,35 +108,8 @@ class NmeaDecoder(nmea.Decoder):
   """Hemisphere/Geneq added NMEA sentence decoder."""
   DECODER_DICT = nmea.Decoder.DECODER_DICT
 
-  DecGBS = collections.namedtuple(
-      'dGBS',
-      'time lat_err lon_err alt_err bad_sat '
-      + 'fault_prob range_bias range_bias_sd system signal'
-      )
-  def DecodePSAT_GBS(self,  # pylint: disable=too-many-locals,invalid-name
-                     item):
-    """Decode a PSAT,GBS item."""
-    parsed = item.parsed
-    time = self.DecodeNmeaTime(parsed.time)
-    if not time:
-      return None
-    lat_err = self.DecodeFloat(parsed.lat_err)
-    lon_err = self.DecodeFloat(parsed.lon_err)
-    alt_err = self.DecodeFloat(parsed.alt_err)
-    bad_sat = self.DecodeInt(parsed.bad_sat)
-    sat_type, sat_num = self.DecodeSatNum(bad_sat)
-    bad_sat_view = (self.SatView(sat=bad_sat, type=sat_type, num=sat_num)
-                    if bad_sat else None)
-    fault_prob = self.DecodeFloat(parsed.fault_prob)
-    range_bias = self.DecodeFloat(parsed.range_bias)
-    range_bias_sd = self.DecodeFloat(parsed.range_bias_sd)
-    system = self.DecodeInt(parsed.system)
-    signal = self.DecodeInt(parsed.signal)
-    return self.DecGBS(
-        time, lat_err, lon_err, alt_err, bad_sat_view,
-        fault_prob, range_bias, range_bias_sd, system, signal
-        )
-  DECODER_DICT[NmeaParser.ParsePSAT.ParseGBS] = DecodePSAT_GBS
+  # The standard decoder works because it doesn't process the flag field.
+  DECODER_DICT[NmeaParser.ParsePSAT.ParseGBS] = nmea.Decoder.DecodeGBS
 
   GBS_FLAG_DECODE = {'0': 'Good', '1': 'Warning', '2': 'Bad or fault'}
 
