@@ -20,6 +20,7 @@
 from __future__ import absolute_import, print_function, division
 
 import collections
+from operator import itemgetter
 import sys
 
 from ..systems import generic
@@ -205,14 +206,14 @@ class Extracter(object):  # pylint: disable=too-many-instance-attributes
     self.parse_map = self.parse_map            # Ditto
     self.BindExtracters()
 
-  def AddExtracter(self, cls, name):
-    """Add a new extracter method to list, by name."""
+  def AddExtracter(self, cls, name, prio=0):
+    """Add a new extracter method to list, by name, with priority."""
     func = getattr(cls, name, None)
     if not func:
       return
-    self._AddExtracter(cls, name, func)
+    self._AddExtracter(cls, name, func, prio)
 
-  def _AddExtracter(self, cls, name, func):
+  def _AddExtracter(self, cls, name, func, prio):
     """Add a new extracter method to list, by method object."""
     for num, ent in enumerate(self.extracter_list):
       # Filter out duplicates
@@ -226,20 +227,22 @@ class Extracter(object):  # pylint: disable=too-many-instance-attributes
     # in the calls from __init__().  After the initial BindExtracters()
     # call, subsequent additions are at the end.
     if self.extracters:
-      self.extracter_list.append((cls, name, func))
+      self.extracter_list.append((cls, name, func, prio))
     else:
-      self.extracter_list.insert(0, (cls, name, func))
+      self.extracter_list.insert(0, (cls, name, func, prio))
 
   def BindExtracters(self):
     """Derive a list of bound extracter methods from extracter_list."""
-    self.extracters = [x[2].__get__(self, x[0]) for x in self.extracter_list]
+    # Sort by descending priorities
+    extracters = sorted(self.extracter_list, key=itemgetter(3), reverse=True)
+    self.extracters = [x[2].__get__(self, x[0]) for x in extracters]
 
   def MergeExtracters(self, other):
     """Merge list of extracters from other extracter into this one."""
     if not isinstance(other, Extracter):
       raise ValueError
-    for cls, name, func in other.extracter_list:
-      self._AddExtracter(cls, name, func)
+    for cls, name, func, prio in other.extracter_list:
+      self._AddExtracter(cls, name, func, prio)
     self.BindExtracters()
 
   def GetLine(self, maxlen=LINE_MAX):

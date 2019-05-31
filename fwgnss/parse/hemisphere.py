@@ -289,7 +289,9 @@ class BinaryExtracter(binary.Extracter):
 
   def __new__(cls, infile=None):
     self = super(BinaryExtracter, cls).__new__(cls, infile)
-    self.AddExtracter(BinaryExtracter, 'ExtractHemisphere')
+    # Prioritize this extracter over NMEA, since NMEA won't reject
+    # binary messages quickly.
+    self.AddExtracter(BinaryExtracter, 'ExtractHemisphere', 10)
     self.parse_map['HEMISPHERE'] = Message.PARSE_CLASS
     return self
 
@@ -1173,10 +1175,8 @@ class BinaryDecoder(binary.Decoder):
   DECODER_DICT[BinaryParser.Bin100] = DecodeBin100
 
 
-class Extracter(BinaryExtracter, nmea.Extracter, ResponseExtracter):
+class Extracter(nmea.Extracter, BinaryExtracter, ResponseExtracter):
   """Class for combined extracter."""
-  # We put the binary extracter first since the NMEA extracter doesn't
-  # immediately reject the '$BIN' prefix.
 
 
 class Parser(NmeaParser, BinaryParser):
