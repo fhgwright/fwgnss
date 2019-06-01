@@ -49,6 +49,25 @@ class NmeaParser(nmea.Parser):
     parser = cls.NMEA_DICT.get(msgtype)
     return parser and parser.ThisParser(subtype) if subtype else parser
 
+  class ParseRMC(nmea.Parser.ParseRMC):
+    """Parser for GxRMC sentence, with bug workaround."""
+
+    @classmethod
+    def Parse(cls, item):
+      """Parse the xxRMC item."""
+      data = item.data
+      if data[2] == 'V' and data[1] and not data[9]:
+        # Geneq firmware bug puts one too many commas in invalid fix version
+        item.parse_error = ('Extra comma in %s sentence - applying workaround'
+                            % item.msgtype)
+        data_save = list(data)  # Preserve original
+        item.data.pop(9)  # Delete spurious item
+        result = super(NmeaParser.ParseRMC, cls).Parse(item)  # With repair
+        item.data = data_save  # Restore unmodified original
+        return result
+      return super(NmeaParser.ParseRMC, cls).Parse(item)  # Process normally
+  NMEA_DICT['GPRMC'] = ParseRMC
+
   class ParsePSAT(nmea.Parser.ParseItem):
     """Parser for PSAT sentences."""
     PSAT_DICT = {}

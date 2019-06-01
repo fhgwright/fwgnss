@@ -278,12 +278,6 @@ class Parser(generic.Parser):
     def Parse(cls, item):
       """Parse the xxRMC item."""
       data = item.data
-      if data[2] == 'V' and data[1] and not data[9]:
-        # Geneq firmware bug puts one too many commas in invalid fix version
-        item.parse_error = ('Extra comma in %s sentence - applying workaround'
-                            % item.msgtype)
-        data = list(data)  # Don't modify original
-        data.pop(9)
       try:
         navstat = data[13]
       except IndexError:
