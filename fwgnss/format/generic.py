@@ -94,6 +94,12 @@ class Formatter(object):
       return
     decoded = self.decoder.Decode(item)
     formatter = self.FORMATTER_DICT.get(item.parser)
+    # If not found, try parent classes
+    if not formatter:
+      for parser in item.parser.__mro__:
+        formatter = self.FORMATTER_DICT.get(parser)
+        if formatter:
+          break
     if item.decode_error:
       err = item.decode_error
       if isinstance(err, str):

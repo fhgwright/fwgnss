@@ -397,6 +397,12 @@ class Decoder(object):
   def Decode(self, item, ignore_error=False):
     """Return and store the decoded version of this item."""
     decoder = self.DECODER_DICT.get(item.parser)
+    # If not found, try parent classes
+    if not decoder:
+      for parser in item.parser.__mro__:
+        decoder = self.DECODER_DICT.get(parser)
+        if decoder:
+          break
     if decoder:
       if ignore_error:
         try:
