@@ -90,7 +90,7 @@ class NmeaParser(nmea.Parser):
         return None
       return parser and parser.Parse(item)
 
-    class ParseGBS(nmea.Parser.ParseItem):
+    class ParseGBS(nmea.Parser.ParseGBS):
       """Parser for PSAT,GBS sentences."""
       # This is almost like the GxGBS sentence, except for the added flag field
       PARSED, MIN_LENGTH = nmea.MakeParser(
@@ -126,9 +126,6 @@ nmea.Nmea.PARSE_CLASS = NmeaParser
 class NmeaDecoder(nmea.Decoder):
   """Hemisphere/Geneq added NMEA sentence decoder."""
   DECODER_DICT = nmea.Decoder.DECODER_DICT
-
-  # The standard decoder works because it doesn't process the flag field.
-  DECODER_DICT[NmeaParser.ParsePSAT.ParseGBS] = nmea.Decoder.DecodeGBS
 
   GBS_FLAG_DECODE = {'0': 'Good', '1': 'Warning', '2': 'Bad or fault'}
 
