@@ -115,9 +115,8 @@ class Extracter(generic.Extracter):
 
     # Keep bytes version of body for checksum
     bbody = self.line[1:length]
-    try:
-      body = self.GetText(bbody)
-    except UnicodeDecodeError:  # Here if it's not really NMEA
+    body = self.GetText(bbody)
+    if not body:  # Here if it's not really NMEA
       return None, 0
     data = body.split(Nmea.SEPARATOR)
     if len(data) < 2 or not Nmea.TYPE_RE.match(data[0]):

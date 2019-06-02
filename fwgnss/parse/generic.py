@@ -317,9 +317,13 @@ class Extracter(object):  # pylint: disable=too-many-instance-attributes
   @staticmethod
   def GetText(data):
     """Convert data from bytes to string, if needed."""
-    if isinstance(data, str):
-      return data
-    return data.decode(TextItem.TEXT_ENCODING)
+    # Always runs decode to check for non-ASCII characters
+    # Wraps with str() to ensure str rather than unicode in Python 2
+    try:
+      return str(data.decode(TextItem.TEXT_ENCODING))
+    except UnicodeDecodeError:
+      pass
+    return None
 
   @staticmethod
   def IsBinary(item):
@@ -347,6 +351,8 @@ class CommentExtracter(Extracter):
     if not endlen:
       return None, 0
     data = self.GetText(self.line[:length])
+    if data is None:
+      return None, 0
     return Comment(data=data, length=length), length + endlen
 
 

@@ -217,6 +217,8 @@ class ResponseExtracter(generic.Extracter):
     if not endlen:
       return None, 0  # Discard unterminated line
     resp = self.GetText(self.line[Response.PREFIX_LEN:length])
+    if resp is None:
+      return None, 0
     return Response(resp), length + endlen
 
 
