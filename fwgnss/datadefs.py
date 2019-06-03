@@ -24,26 +24,54 @@ class Debuggable(object):  # pylint: disable=too-few-public-methods
   """Base class for all objects, providing methods for debugging."""
   # The IV/CV methods expect that class "variables" are all upper case,
   # and that instance variables are all lower case.
-  _DEBUG_EXCLUDE = set(['IV', 'CV', '_DEBUG_EXCLUDE'])
+  # This assumption can be overridden with the INCLUDE/EXCLUDE variables.
+  #
+  # These variables are merged across the MRO chain, so they only need
+  # to reflect the class where they appear.  Since the IV/CV methods are
+  # only intended for debugging, this processing is done within, rather
+  # than at definition time.
+  _CV_EXCLUDE = ['IV', '_IV_INCLUDE', '_IV_EXCLUDE',
+                 'CV', '_CV_INCLUDE', '_CV_EXCLUDE']
 
-  def IV(self):  # pylint: disable=invalid-name
-    """Get dict of instance variables (for debugging)."""
-    # Uses the naming convention for filtering
-    result = {}
-    for name in dir(self):
-      if not name.startswith('__') and name == name.lower():
-        result[name] = getattr(self, name)
+  @classmethod
+  def _Collect(cls, name):
+    """Merge sets from the specified variable across the MRO chain."""
+    result = set()
+    for this in cls.__mro__:
+      result |= set(getattr(this, name, []))
     return result
 
   @classmethod
   def CV(cls):  # pylint: disable=invalid-name
     """Get dict of class variables (for debugging)."""
-    # Uses the naming convention for filtering
+    # Uses the naming convention for default filtering
+    include = cls._Collect('_CV_INCLUDE')
+    exclude = cls._Collect('_CV_EXCLUDE')
     result = {}
     for name in dir(cls):
-      if (not name.startswith('__') and name == name.upper()
-          and name not in cls._DEBUG_EXCLUDE):
+      if name in include:
         result[name] = getattr(cls, name)
+        continue
+      if name in exclude:
+        continue
+      if not name.startswith('__') and name == name.upper():
+        result[name] = getattr(cls, name)
+    return result
+
+  def IV(self):  # pylint: disable=invalid-name
+    """Get dict of instance variables (for debugging)."""
+    # Uses the naming convention for default filtering
+    include = self._Collect('_IV_INCLUDE')
+    exclude = self._Collect('_IV_EXCLUDE')
+    result = {}
+    for name in dir(self):
+      if name in include:
+        result[name] = getattr(self, name)
+        continue
+      if name in exclude:
+        continue
+      if not name.startswith('__') and name == name.lower():
+        result[name] = getattr(self, name)
     return result
 
 
