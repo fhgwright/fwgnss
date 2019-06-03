@@ -23,6 +23,7 @@ import collections
 from operator import itemgetter
 import sys
 
+from ..datadefs import BindDictFuncs
 from ..debuggable import Debuggable
 from ..systems import generic
 from ..systems import glonass
@@ -379,28 +380,29 @@ class Decoder(Debuggable):
   def __init__(self):
     self.last_time = None
     self.last_dtime = None
+    self.decoder_dict = BindDictFuncs('DECODER_DICT', self)
 
   SatResidual = collections.namedtuple('Residual', 'sat type num value')
   SatView = collections.namedtuple('SatView', 'sat type num')
 
   def Decode(self, item, ignore_error=False):
     """Return and store the decoded version of this item."""
-    decoder = self.DECODER_DICT.get(item.parser)
+    decoder = self.decoder_dict.get(item.parser)
     # If not found, try parent classes
     if not decoder:
       for parser in item.parser.__mro__:
-        decoder = self.DECODER_DICT.get(parser)
+        decoder = self.decoder_dict.get(parser)
         if decoder:
           break
     if decoder:
       if ignore_error:
         try:
-          decoded = decoder(self, item)
+          decoded = decoder(item)
         # Any exception aborts decode
         except:  # pylint: disable=bare-except
           decoded = None
       else:
-        decoded = decoder(self, item)
+        decoded = decoder(item)
       item.decoded = decoded
       return decoded
     return None

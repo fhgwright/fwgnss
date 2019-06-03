@@ -66,3 +66,12 @@ def InterpolateString(string, values):
   # This substitutes for a list comprehension to avoid leaving a loop
   # variable lying around, where it can accidentally become a class variable.
   return [string % v for v in values]
+
+
+def BindDictFuncs(name, obj):
+  """Bind functions in a dictionary to a given object."""
+  cls = obj.__class__
+  items = getattr(cls, name).items()
+  # Avoid dict comprehension for Python 2.6 compatibility.
+  # Add an empty list to avoid the pylint3 warning.
+  return dict([[x[0], x[1].__get__(obj, cls)] for x in items] + [])

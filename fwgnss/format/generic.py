@@ -19,6 +19,7 @@
 
 from __future__ import absolute_import, print_function, division
 
+from ..datadefs import BindDictFuncs
 from ..debuggable import Debuggable
 from ..parse import generic  # For pylint-placating dummy defs
 from ..datetime import xdatetime
@@ -64,6 +65,7 @@ class Formatter(Debuggable):
     self._last_summary = None
     self.extracter = self.EXTRACTER(infile)
     self.decoder = self.DECODER()
+    self.formatter_dict = BindDictFuncs('FORMATTER_DICT', self)
     self.filter = set()
     self.stop_on_error = False     # Turn parse/decode errors into exceptions
     self.hide_warnings = False     # Exclude warnings from stderr
@@ -94,11 +96,11 @@ class Formatter(Debuggable):
     if not parsed:
       return
     decoded = self.decoder.Decode(item)
-    formatter = self.FORMATTER_DICT.get(item.parser)
+    formatter = self.formatter_dict.get(item.parser)
     # If not found, try parent classes
     if not formatter:
       for parser in item.parser.__mro__:
-        formatter = self.FORMATTER_DICT.get(parser)
+        formatter = self.formatter_dict.get(parser)
         if formatter:
           break
     if item.decode_error:
@@ -108,7 +110,7 @@ class Formatter(Debuggable):
       elif isinstance(err, tuple):
         self.SendError(2, err[0])
         if formatter:
-          formatter(self, item, err[1], error=True)
+          formatter(item, err[1], error=True)
       else:
         self.SendError(2, 'Unexpected decode error type')
       if self.stop_on_error:
@@ -116,7 +118,7 @@ class Formatter(Debuggable):
     if not decoded:
       return
     if formatter:
-      formatter(self, item)
+      formatter(item)
     return
 
   def Send(self, indent, text):
