@@ -167,6 +167,8 @@ class TextResponseItem(ResponseItem, TextItem):
 class Comment(TextItem):
   """Class for comment lines."""
   PREFIX_IN = b'#'
+  MAX_LENGTH = 132
+  BAD_CHARS = set(range(ord(' '))) - set([ord('\t')])
 
   __slots__ = ()
 
@@ -348,11 +350,14 @@ class CommentExtracter(Extracter):
     if  not self.line.startswith(Comment.PREFIX_IN):
       return None, 0
     length, endlen = self.GetEOL()
-    if not endlen:
+    if not endlen or length > Comment.MAX_LENGTH:
       return None, 0
     data = self.GetText(self.line[:length])
     if data is None:
       return None, 0
+    for char in bytearray(data):
+      if char in Comment.BAD_CHARS:
+        return None, 0
     return Comment(data=data, length=length), length + endlen
 
 
