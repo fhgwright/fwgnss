@@ -23,13 +23,14 @@ import collections
 from operator import itemgetter
 import sys
 
+from ..datadefs import Debuggable
 from ..systems import generic
 from ..systems import glonass
 from ..systems import gps
 from ..datetime import xdatetime
 
 
-class Constants(object):  # pylint:disable=too-few-public-methods
+class Constants(Debuggable):  # pylint:disable=too-few-public-methods
   """Class which holds various constant definitions."""
 
   SECONDS_PER_DAY = generic.Constants.SECONDS_PER_DAY
@@ -70,12 +71,9 @@ class Constants(object):  # pylint:disable=too-few-public-methods
       )
 
 
-class BaseItem(object):  # pylint:disable=too-many-instance-attributes
+class BaseItem(Debuggable):  # pylint:disable=too-many-instance-attributes
   """Base class for extracted items."""
-  # The IV/CV methods expect that class "variables" are all upper case,
-  # and that instance variables are all lower case.
   PARSE_CLASS = None
-  _DEBUG_EXCLUDE = set(['IV', 'CV', '_DEBUG_EXCLUDE'])
 
   __slots__ = ('data', 'length', 'msgtype', 'subtype',
                'parser', 'parsed', 'parse_error',
@@ -106,26 +104,6 @@ class BaseItem(object):  # pylint:disable=too-many-instance-attributes
   def LogText():
     """Return item text for logging."""
     return None
-
-  def IV(self):  # pylint: disable=invalid-name
-    """Get dict of instance variables (for debugging)."""
-    # Uses the naming convention for filtering
-    result = {}
-    for name in dir(self):
-      if not name.startswith('__') and name == name.lower():
-        result[name] = getattr(self, name)
-    return result
-
-  @classmethod
-  def CV(cls):  # pylint: disable=invalid-name
-    """Get dict of class variables (for debugging)."""
-    # Uses the naming convention for filtering
-    result = {}
-    for name in dir(cls):
-      if (not name.startswith('__') and name == name.upper()
-          and name not in cls._DEBUG_EXCLUDE):
-        result[name] = getattr(cls, name)
-    return result
 
 class ErrorItem(BaseItem):
   """Class for unrecognizable items."""
@@ -182,7 +160,7 @@ class Comment(TextItem):
     return self.data
 
 
-class Extracter(object):  # pylint: disable=too-many-instance-attributes
+class Extracter(Debuggable):  # pylint: disable=too-many-instance-attributes
   """Base class for extracters."""
   LINE_MAX = 500  # Generous limit - just defends against non-CRLF data
 
@@ -361,7 +339,7 @@ class CommentExtracter(Extracter):
     return Comment(data=data, length=length), length + endlen
 
 
-class Parser(object):
+class Parser(Debuggable):
   """Base class for item parsers."""
 
   @classmethod
@@ -384,7 +362,7 @@ class Parser(object):
     """Return parsed object for this item's data."""
     return parser.Parse(item)
 
-  class ParseItem(object):  # pylint: disable=too-few-public-methods
+  class ParseItem(Debuggable):  # pylint: disable=too-few-public-methods
     """Base class for type-specific parsers."""
 
     @classmethod
@@ -394,7 +372,7 @@ class Parser(object):
       return cls
 
 
-class Decoder(object):
+class Decoder(Debuggable):
   """Base class for item decoders."""
   DECODER_DICT = {}
 

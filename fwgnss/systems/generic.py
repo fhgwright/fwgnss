@@ -19,10 +19,11 @@
 
 from __future__ import absolute_import, print_function, division
 
+from ..datadefs import Debuggable
 from ..datetime import xdatetime
 
 
-class Constants(object):  # pylint: disable=too-few-public-methods
+class Constants(Debuggable):  # pylint: disable=too-few-public-methods
   """Class which holds various constant definitions."""
 
   SECONDS_PER_DAY = xdatetime.SECONDS_PER_DAY

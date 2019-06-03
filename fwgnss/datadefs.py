@@ -20,7 +20,34 @@
 from __future__ import absolute_import, print_function, division
 
 
-class BitString(object):  # pylint: disable=too-few-public-methods
+class Debuggable(object):  # pylint: disable=too-few-public-methods
+  """Base class for all objects, providing methods for debugging."""
+  # The IV/CV methods expect that class "variables" are all upper case,
+  # and that instance variables are all lower case.
+  _DEBUG_EXCLUDE = set(['IV', 'CV', '_DEBUG_EXCLUDE'])
+
+  def IV(self):  # pylint: disable=invalid-name
+    """Get dict of instance variables (for debugging)."""
+    # Uses the naming convention for filtering
+    result = {}
+    for name in dir(self):
+      if not name.startswith('__') and name == name.lower():
+        result[name] = getattr(self, name)
+    return result
+
+  @classmethod
+  def CV(cls):  # pylint: disable=invalid-name
+    """Get dict of class variables (for debugging)."""
+    # Uses the naming convention for filtering
+    result = {}
+    for name in dir(cls):
+      if (not name.startswith('__') and name == name.upper()
+          and name not in cls._DEBUG_EXCLUDE):
+        result[name] = getattr(cls, name)
+    return result
+
+
+class BitString(Debuggable):  # pylint: disable=too-few-public-methods
   """Class for bitstring data."""
   __slots__ = ('raw', 'nbits', 'data', 'lpad', 'rpad')
 

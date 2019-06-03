@@ -19,6 +19,7 @@
 
 from __future__ import absolute_import, print_function, division
 
+from ..datadefs import Debuggable
 from ..parse import generic  # For pylint-placating dummy defs
 from ..datetime import xdatetime
 
@@ -39,7 +40,7 @@ class DecodeError(Error):
 
 
 # pylint: disable=too-many-instance-attributes,too-many-public-methods
-class Formatter(object):
+class Formatter(Debuggable):
   """Base class for formatter objects."""
   SPACES = '              '
 
