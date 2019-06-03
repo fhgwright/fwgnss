@@ -23,7 +23,7 @@ import collections
 from operator import itemgetter
 import sys
 
-from ..datadefs import Debuggable
+from ..debuggable import Debuggable
 from ..systems import generic
 from ..systems import glonass
 from ..systems import gps

@@ -913,7 +913,7 @@ class BinaryDecoder(binary.Decoder):
     return self.DecBin65(knum, strings)
   DECODER_DICT[BinaryParser.Bin65] = DecodeBin65
 
-  BIN65_STRINGS = ['String %d' % (i + 1) for i in range(5)]
+  BIN65_STRINGS = datadefs.InterpolateString('String %d', range(1, 5 + 1))
 
   def DecodeBin66(self, item):  # pylint: disable=too-many-locals
     """Decode Bin66 message."""

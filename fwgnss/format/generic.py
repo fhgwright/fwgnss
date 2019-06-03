@@ -19,7 +19,7 @@
 
 from __future__ import absolute_import, print_function, division
 
-from ..datadefs import Debuggable
+from ..debuggable import Debuggable
 from ..parse import generic  # For pylint-placating dummy defs
 from ..datetime import xdatetime
 
