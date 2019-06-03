@@ -278,6 +278,7 @@ class BinaryExtracter(binary.Extracter):
   LOG_PAT = 'Bin%d(%d)'
   SUMMARY_PAT = '$' + LOG_PAT
   SUMMARY_DESC_PAT = SUMMARY_PAT + ': %s'
+  LENGTH_FACTOR = 3  # Maximum allowed length relative to maximum known length
 
   def __new__(cls, infile=None):
     self = super(BinaryExtracter, cls).__new__(cls, infile)
@@ -287,7 +288,7 @@ class BinaryExtracter(binary.Extracter):
     self.parse_map['HEMISPHERE'] = Message.PARSE_CLASS
     return self
 
-  def ExtractHemisphere(self):
+  def ExtractHemisphere(self):  # pylint: disable=too-many-return-statements
     """Extract a Hemisphere binary item from the input stream."""
     if not self.line.startswith(self.SYNC):
       return None, 0
@@ -302,6 +303,8 @@ class BinaryExtracter(binary.Extracter):
         continue
       needed = length + self.OVERHEAD - len(self.line)
       if needed > 0:
+        if length > BinaryParser.MAX_LENGTH * self.LENGTH_FACTOR:
+          return None, 0
         if not self.GetLine(needed):
           return None, 0
         continue
@@ -565,6 +568,8 @@ class BinaryParser(binary.Parser):
         + 'sChannelData:SChannelL2Data*12'
         )
   MESSAGE_DICT[100] = Bin100
+
+  MAX_LENGTH = max([x.PARSER[1].size for x in MESSAGE_DICT.values()])
 
 Message.PARSE_CLASS = BinaryParser
 
