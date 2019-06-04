@@ -39,8 +39,8 @@ class Constants(generic.Constants):  # pylint: disable=too-few-public-methods
   SIGNAL_DECODE = {1: 'L1 C/A'}
 
 
-class Nmea(generic.TextItem):
-  """NMEA item from extracter."""
+class Sentence(generic.TextItem):
+  """NMEA sentence from extracter."""
   PREFIX_IN = b'$'
 
   PREFIX = '$'
@@ -58,7 +58,7 @@ class Nmea(generic.TextItem):
   __slots__ = ('has_checksum',)
 
   def __init__(self, data, length=None, msgtype=None, has_checksum=False):
-    super(Nmea, self).__init__(data, length, msgtype)
+    super(Sentence, self).__init__(data, length, msgtype)
     self.has_checksum = has_checksum
 
   def Contents(self):
@@ -94,13 +94,13 @@ class Extracter(generic.Extracter):
   def __new__(cls, infile=None):
     self = super(Extracter, cls).__new__(cls, infile)
     self.AddExtracter(Extracter, 'ExtractNmea')
-    self.parse_map['NMEA'] = Nmea.PARSE_CLASS
+    self.parse_map['NMEA'] = Sentence.PARSE_CLASS
     return self
 
   def ExtractNmea(self):  # pylint: disable=too-many-return-statements
-    """Extract an NMEA item from the input stream."""
+    """Extract an NMEA sentence from the input stream."""
     # Valid line must have at least two chars and start with prefix
-    if len(self.line) < 2 or not self.line.startswith(Nmea.PREFIX_IN):
+    if len(self.line) < 2 or not self.line.startswith(Sentence.PREFIX_IN):
       return None, 0
 
     length, endlen = self.GetEOL()
@@ -118,21 +118,21 @@ class Extracter(generic.Extracter):
     body = self.GetText(bbody)
     if not body:  # Here if it's not really NMEA
       return None, 0
-    data = body.split(Nmea.SEPARATOR)
-    if len(data) < 2 or not Nmea.TYPE_RE.match(data[0]):
+    data = body.split(Sentence.SEPARATOR)
+    if len(data) < 2 or not Sentence.TYPE_RE.match(data[0]):
       return None, 0
     last = data[-1]
-    has_checksum = len(last) >= 3 and last[-3] == Nmea.CHECKSUM_FLAG
+    has_checksum = len(last) >= 3 and last[-3] == Sentence.CHECKSUM_FLAG
     if has_checksum:
       try:
         checksum = int(last[-2:], 16)
       except ValueError:
         return None, 0
       data[-1] = last[:-3]
-      actual_checksum = Nmea.ChecksumBytes(bbody[:-3])
+      actual_checksum = Sentence.ChecksumBytes(bbody[:-3])
       if actual_checksum != checksum:
         return None, 0
-    item = Nmea(data=data, msgtype=data[0].upper(), has_checksum=has_checksum)
+    item = Sentence(data=data, msgtype=data[0].upper(), has_checksum=has_checksum)
     return item, length + endlen
 
 
@@ -143,7 +143,7 @@ def MakeParser(name, pattern):
 
 
 class Parser(generic.Parser):
-  """Class for NMEA item parser."""
+  """Class for NMEA sentence parser."""
   NMEA_DICT = {}
 
   @classmethod
@@ -477,11 +477,11 @@ class Parser(generic.Parser):
       return cls.PARSED._make(item.data[1:11])
   NMEA_DICT['GPGBS'] = ParseGBS
 
-Nmea.PARSE_CLASS = Parser
+Sentence.PARSE_CLASS = Parser
 
 
 class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
-  """Class for NMEA item decoder."""
+  """Class for NMEA sentence decoder."""
   DECODER_DICT = generic.Decoder.DECODER_DICT
 
   def __init__(self):

@@ -121,7 +121,7 @@ def GetBundledNmeaData(extracter):
       other_data.append(item)
       continue
 
-    if not isinstance(item, parse_nmea.Nmea):
+    if not isinstance(item, parse_nmea.Sentence):
       continue
 
     data = item.data
@@ -252,7 +252,7 @@ def main(argv):
         DumpLogs(parsed_args.log_other, log_time, response_log, binary_log)
         log_time = nmea_time
 
-      if isinstance(item, parse_nmea.Nmea):
+      if isinstance(item, parse_nmea.Sentence):
         DumpLogs(parsed_args.log_other, log_time, response_log, binary_log)
         if exclude_times:
           excluded = CheckTimeList(nmea_time, exclude_times)

@@ -120,7 +120,7 @@ class NmeaParser(nmea.Parser):
       return cls.PARSED._make(item.data[1:13])
   NMEA_DICT['RD1'] = ParseRD1
 
-nmea.Nmea.PARSE_CLASS = NmeaParser
+nmea.Sentence.PARSE_CLASS = NmeaParser
 
 
 class NmeaDecoder(nmea.Decoder):
