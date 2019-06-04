@@ -83,6 +83,8 @@ def DefineParser(name, prefix, struct_dict, pattern):
 
 class BinaryItem(generic.Item):
   """Generic binary item from extracter."""
+  IS_BINARY = True
+
   __slots__ = ()
 
 
@@ -98,11 +100,6 @@ class BinaryControlItem(generic.ControlItem, BinaryItem):
 
 class Extracter(generic.Extracter):
   """Generic binary message extracter."""
-  ENDIANNESS = None
-
-  @staticmethod
-  def IsBinary(item):
-    return isinstance(item, BinaryItem)
 
 
 class Parser(generic.Parser):

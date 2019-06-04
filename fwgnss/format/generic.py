@@ -289,13 +289,9 @@ class Formatter(Debuggable):
 class BinaryFormatter(Formatter):
   """Base class for generic binary message formatter object."""
 
-  def __init__(self, infile=None):
-    super(BinaryFormatter, self).__init__(infile)
-    self.IsBinary = self.EXTRACTER.IsBinary  # pylint: disable=invalid-name
-
   def DumpRaw(self, indent, item):
     """Dump raw data if binary."""
-    if not self.IsBinary(item):
+    if not item.IS_BINARY:
       return
     little_endian = item.ENDIANNESS == 'little'
     for line in self.FormatRawData(item.data, item.length, little_endian):

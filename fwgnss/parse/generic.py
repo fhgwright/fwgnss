@@ -126,6 +126,8 @@ class TextItem(Item):
 
   TEXT_ENCODING = 'ascii'
 
+  IS_BINARY = False
+
   __slots__ = ()
 
 
@@ -301,12 +303,6 @@ class Extracter(Debuggable):  # pylint: disable=too-many-instance-attributes
     except UnicodeDecodeError:
       pass
     return None
-
-  @staticmethod
-  def IsBinary(item):
-    """Return True if item is binary."""
-    _ = item
-    return False
 
   def AllowComments(self):
     """Enable comment-line recognition in this Extracter."""
