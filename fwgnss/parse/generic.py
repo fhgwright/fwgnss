@@ -129,13 +129,13 @@ class TextItem(Item):
   __slots__ = ()
 
 
-class ResponseItem(Item):
-  """Base class for command-response extracted items."""
+class ControlItem(Item):
+  """Base class for extracted control items."""
   __slots__ = ()
 
 
-class TextResponseItem(ResponseItem, TextItem):
-  """Base class for text-based command-response extracted items."""
+class TextControlItem(ControlItem, TextItem):
+  """Base class for text-based extracted control items."""
   __slots__ = ()
 
 

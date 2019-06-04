@@ -109,7 +109,7 @@ class NmeaExtracter(generic.Extracter):
       return None, 0  # Discard unterminated line
 
     # Note that Hemisphere response lines will also match up to this point
-    # (if this extracter precedes the Response extracter), but will be
+    # (if this extracter precedes the Control extracter), but will be
     # rejected by the re.match below.  Since response lines are rare, it's
     # not worth worrying about the cost of getting all the way into the
     # re.match before rejecting them.

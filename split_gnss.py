@@ -29,6 +29,8 @@ try:
 except NameError:
   from functools import reduce  # pylint: disable=redefined-builtin
 
+from fwgnss.parse import binary as parse_binary
+from fwgnss.parse import generic as parse_generic
 from fwgnss.parse import hemisphere as parse_hemisphere
 from fwgnss.parse import nmea as parse_nmea
 
@@ -94,7 +96,7 @@ def ParseArgs(argv):
   parser.add_argument('--exclude-bin', type=CsvInts)
   parser.add_argument('--include-times', type=CsvTimes)
   parser.add_argument('--exclude-times', type=CsvTimes)
-  parser.add_argument('--exclude-responses', action='store_true')
+  parser.add_argument('--exclude-control', action='store_true')
   return parser.parse_args(argv)
 
 
@@ -113,7 +115,7 @@ def GetBundledNmeaData(extracter):
   other_data = []
   gsa_data = []
   OTHER_TYPES = (  # pylint: disable=invalid-name
-      parse_hemisphere.Response, parse_hemisphere.Message
+      parse_generic.ControlItem, parse_binary.BinaryItem
       )
   for item in extracter.GetItems():
 
@@ -194,22 +196,22 @@ def GetFilteredNmeaData(  # pylint: disable=too-many-branches,too-many-locals
       yield s_nmea_time, item
 
 
-def DumpLogs(ofile, log_time, response_log, binary_log):
+def DumpLogs(ofile, log_time, control_log, binary_log):
   """Dump accumulated logs.
 
   Args:
     ofile: file for output
     log_time: timestamp from NMEA sentence
-    response_log: list of responses
+    control_log: list of control items
     binary_log: list of binary messages
   """
-  if response_log:
-    for response in response_log:
+  if control_log:
+    for control in control_log:
       try:
-        print('%s> %s' % ((log_time or DUMMY_TIME), response), file=ofile)
+        print('%s> %s' % ((log_time or DUMMY_TIME), control), file=ofile)
       except IOError:
         pass
-    response_log[:] = []
+    control_log[:] = []
   if binary_log:
     try:
       print('%s: %s' % ((log_time or DUMMY_TIME), ', '.join(binary_log)),
@@ -228,7 +230,7 @@ def main(argv):
                  else set())
   include_times = parsed_args.include_times
   exclude_times = parsed_args.exclude_times
-  response_log = []
+  control_log = []
   binary_log = []
   log_time = ''
   extracter = Extracter(parsed_args.input)
@@ -249,11 +251,11 @@ def main(argv):
           pdb_module.set_trace()
 
       if log_time != nmea_time or not item:
-        DumpLogs(parsed_args.log_other, log_time, response_log, binary_log)
+        DumpLogs(parsed_args.log_other, log_time, control_log, binary_log)
         log_time = nmea_time
 
       if isinstance(item, parse_nmea.Sentence):
-        DumpLogs(parsed_args.log_other, log_time, response_log, binary_log)
+        DumpLogs(parsed_args.log_other, log_time, control_log, binary_log)
         if exclude_times:
           excluded = CheckTimeList(nmea_time, exclude_times)
           if excluded:
@@ -272,9 +274,9 @@ def main(argv):
             pass
         continue
 
-      if isinstance(item, parse_hemisphere.Response):
-        if parsed_args.log_other and not parsed_args.exclude_responses:
-          response_log.append(item.LogText())
+      if isinstance(item, parse_generic.ControlItem):
+        if parsed_args.log_other and not parsed_args.exclude_control:
+          control_log.append(item.LogText())
         continue
 
       if isinstance(item, parse_hemisphere.Message):
@@ -289,7 +291,7 @@ def main(argv):
           binary_log.append('%d(%d)' % (msgtype, item.length))
         continue
 
-    DumpLogs(parsed_args.log_other, log_time, response_log, binary_log)
+    DumpLogs(parsed_args.log_other, log_time, control_log, binary_log)
 
   for out in [parsed_args.output,
               parsed_args.binary_out, parsed_args.log_other]:

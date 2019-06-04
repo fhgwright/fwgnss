@@ -87,12 +87,12 @@ class BinaryItem(generic.Item):
 
 
 class BinaryDataItem(BinaryItem):
-  """Generic binary non-response item from extracter."""
+  """Generic binary non-control item from extracter."""
   __slots__ = ()
 
 
-class BinaryResponseItem(generic.ResponseItem, BinaryItem):
-  """Base class for binary command-response extracted items."""
+class BinaryControlItem(generic.ControlItem, BinaryItem):
+  """Generic binary control item from extracter."""
   __slots__ = ()
 
 

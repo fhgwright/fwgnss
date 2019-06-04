@@ -179,7 +179,8 @@ class NmeaDecoder(nmea.NmeaDecoder):
 
 # Hemisphere command responses
 
-class Response(generic.TextItem):
+
+class Response(generic.TextControlItem):
   """Response item from extracter."""
   PREFIX_IN = b'$>'
   PREFIX_LEN = len(PREFIX_IN)
