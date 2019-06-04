@@ -83,19 +83,16 @@ def DefineParser(name, prefix, struct_dict, pattern):
 
 class BinaryItem(generic.Item):
   """Generic binary item from extracter."""
-
   __slots__ = ()
 
 
 class BinaryDataItem(BinaryItem):
   """Generic binary non-response item from extracter."""
-
   __slots__ = ()
 
 
 class BinaryResponseItem(generic.ResponseItem, BinaryItem):
   """Base class for binary command-response extracted items."""
-
   __slots__ = ()
 
 

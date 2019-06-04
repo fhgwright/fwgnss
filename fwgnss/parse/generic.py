@@ -108,13 +108,11 @@ class BaseItem(Debuggable):  # pylint:disable=too-many-instance-attributes
 
 class ErrorItem(BaseItem):
   """Class for unrecognizable items."""
-
   __slots__ = ()
 
 
 class Item(BaseItem):
   """Base class for non-error extracted items."""
-
   __slots__ = ()
 
 
@@ -133,13 +131,11 @@ class TextItem(Item):
 
 class ResponseItem(Item):
   """Base class for command-response extracted items."""
-
   __slots__ = ()
 
 
 class TextResponseItem(ResponseItem, TextItem):
   """Base class for text-based command-response extracted items."""
-
   __slots__ = ()
 
 
