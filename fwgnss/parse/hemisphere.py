@@ -221,7 +221,7 @@ class ResponseExtracter(generic.Extracter):
     resp = self.GetText(self.line[Response.PREFIX_LEN:length])
     if resp is None:
       return None, 0
-    return Response(resp), length + endlen
+    return Response.Make(resp), length + endlen
 
 
 # Hemisphere/Geneq binary messages
@@ -313,7 +313,7 @@ class BinaryExtracter(binary.Extracter):
     if actual_checksum != checksum or end != Message.END:
       return None, 0
     consumed = length + Message.OVERHEAD
-    return Message(data=body, length=length, msgtype=msgtype), consumed
+    return Message.Make(data=body, length=length, msgtype=msgtype), consumed
 
 # Need a global handle on this while defining the class
 struct_dict = {}  # pylint: disable=invalid-name

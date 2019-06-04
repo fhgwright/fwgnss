@@ -106,6 +106,13 @@ class BaseItem(Debuggable):  # pylint:disable=too-many-instance-attributes
     """Return item text for logging."""
     return None
 
+  @classmethod
+  def Make(cls, *args, **kwargs):
+    """Create a new instance of this item type."""
+    # Overridable if type is data-dependent.
+    return cls(*args, **kwargs)
+
+
 class ErrorItem(BaseItem):
   """Class for unrecognizable items."""
   __slots__ = ()
@@ -263,7 +270,7 @@ class Extracter(Debuggable):  # pylint: disable=too-many-instance-attributes
 
   def _GetErrorItem(self):
     """Get an error item for skipped data, and reset skipped."""
-    item = ErrorItem(self.skipped)
+    item = ErrorItem.Make(self.skipped)
     self.skipped = b''
     return item
 
@@ -329,7 +336,7 @@ class CommentExtracter(Extracter):
     for char in bytearray(data):
       if char in Comment.BAD_CHARS:
         return None, 0
-    return Comment(data=data, length=length), length + endlen
+    return Comment.Make(data=data, length=length), length + endlen
 
 
 class Parser(Debuggable):

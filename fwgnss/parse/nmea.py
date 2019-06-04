@@ -133,7 +133,8 @@ class NmeaExtracter(generic.Extracter):
       actual_checksum = Sentence.ChecksumBytes(bbody[:-3])
       if actual_checksum != checksum:
         return None, 0
-    item = Sentence(data=data, msgtype=data[0].upper(), has_checksum=has_checksum)
+    item = Sentence.Make(data=data, msgtype=data[0].upper(),
+                         has_checksum=has_checksum)
     return item, length + endlen
 
 
