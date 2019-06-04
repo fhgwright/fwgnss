@@ -225,10 +225,6 @@ class ResponseExtracter(generic.Extracter):
 # Hemisphere/Geneq binary messages
 
 
-def _Checksum(data):
-  return sum(bytearray(data))
-
-
 class Message(binary.BinaryDataItem):
   """Generic Hemisphere/Geneq binary message item from extracter."""
   ENDIANNESS = 'little'
@@ -248,11 +244,17 @@ class Message(binary.BinaryDataItem):
 
   __slots__ = ()
 
+  @staticmethod
+  def Checksum(data):
+    """Compute checksum of data."""
+    # The Hemisphere checksum is just a simple sum.
+    return sum(bytearray(data))
+
   def Contents(self):
     """Get full message content."""
     if len(self.data) != self.length:
       raise ValueError
-    checksum = _Checksum(self.data)
+    checksum = self.Checksum(self.data)
     header = self.HEADER.pack(self.SYNC, self.msgtype, self.length)
     trailer = self.TRAILER.pack(checksum, self.END)
     return b''.join([header, self.data, trailer])
@@ -305,7 +307,7 @@ class BinaryExtracter(binary.Extracter):
       return None, 0
     body = self.line[Message.HDR_SIZE:-Message.TRL_SIZE]
     checksum, end = Message.TRAILER.unpack(self.line[-Message.TRL_SIZE:])
-    actual_checksum = _Checksum(body)
+    actual_checksum = Message.Checksum(body)
     if actual_checksum != checksum or end != Message.END:
       return None, 0
     consumed = length + Message.OVERHEAD
