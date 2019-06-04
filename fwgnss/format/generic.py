@@ -291,14 +291,14 @@ class BinaryFormatter(Formatter):
 
   def __init__(self, infile=None):
     super(BinaryFormatter, self).__init__(infile)
-    self.little_endian = self.EXTRACTER.ENDIANNESS == 'little'
     self.IsBinary = self.EXTRACTER.IsBinary  # pylint: disable=invalid-name
 
   def DumpRaw(self, indent, item):
     """Dump raw data if binary."""
     if not self.IsBinary(item):
       return
-    for line in self.FormatRawData(item.data, item.length, self.little_endian):
+    little_endian = item.ENDIANNESS == 'little'
+    for line in self.FormatRawData(item.data, item.length, little_endian):
       self.Send(indent, line)
 
   def DumpBitString(self, indent, name, bits):

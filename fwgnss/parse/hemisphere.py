@@ -224,16 +224,27 @@ class ResponseExtracter(generic.Extracter):
 
 # Hemisphere/Geneq binary messages
 
-ENDIANNESS = 'little'
-ENDIAN_PREFIX = binary.ENDIAN_PREFIXES[ENDIANNESS]
-
 
 def _Checksum(data):
   return sum(bytearray(data))
 
 
 class Message(binary.BinaryDataItem):
-  """Generic binary message item from extracter."""
+  """Generic Hemisphere/Geneq binary message item from extracter."""
+  ENDIANNESS = 'little'
+  ENDIAN_PREFIX = binary.ENDIAN_PREFIXES[ENDIANNESS]
+
+  HEADER = binary.MakeStruct(ENDIAN_PREFIX, ['4s H H'])
+  TRAILER = binary.MakeStruct(ENDIAN_PREFIX, ['H 2s'])
+  HDR_SIZE = HEADER.size
+  TRL_SIZE = TRAILER.size
+  OVERHEAD = HDR_SIZE + TRL_SIZE
+  SYNC = b'$BIN'
+  END = b'\r\n'
+
+  LOG_PAT = 'Bin%d(%d)'
+  SUMMARY_PAT = '$' + LOG_PAT
+  SUMMARY_DESC_PAT = SUMMARY_PAT + ': %s'
 
   __slots__ = ()
 
@@ -241,43 +252,24 @@ class Message(binary.BinaryDataItem):
     """Get full message content."""
     if len(self.data) != self.length:
       raise ValueError
-    extracter = BinaryExtracter
     checksum = _Checksum(self.data)
-    header = extracter.HEADER.pack(extracter.SYNC, self.msgtype, self.length)
-    trailer = extracter.TRAILER.pack(checksum, extracter.END)
+    header = self.HEADER.pack(self.SYNC, self.msgtype, self.length)
+    trailer = self.TRAILER.pack(checksum, self.END)
     return b''.join([header, self.data, trailer])
 
   def Summary(self, full=False):
     """Get message summary text."""
     if len(self.data) != self.length:
       raise ValueError
-    extracter = BinaryExtracter
     parser = self.parser
     if parser:
-      return extracter.SUMMARY_DESC_PAT % (self.msgtype, self.length,
-                                           parser.DESCRIPTION)
-    return extracter.SUMMARY_PAT % (self.msgtype, self.length)
-
-
-def MakeStruct(pat_list):
-  """Create a Hemisphere binary Struct object, from a pattern list."""
-  return binary.MakeStruct(ENDIAN_PREFIX, pat_list)
+      return self.SUMMARY_DESC_PAT % (self.msgtype, self.length,
+                                      parser.DESCRIPTION)
+    return self.SUMMARY_PAT % (self.msgtype, self.length)
 
 
 class BinaryExtracter(binary.Extracter):
   """Hemisphere/Geneq binary message extracter."""
-  ENDIANNESS = ENDIANNESS
-  ENDIAN_PREFIX = ENDIAN_PREFIX
-  HEADER = MakeStruct(['4s H H'])
-  TRAILER = MakeStruct(['H 2s'])
-  HDR_SIZE = HEADER.size
-  TRL_SIZE = TRAILER.size
-  OVERHEAD = HDR_SIZE + TRL_SIZE
-  SYNC = b'$BIN'
-  END = b'\r\n'
-  LOG_PAT = 'Bin%d(%d)'
-  SUMMARY_PAT = '$' + LOG_PAT
-  SUMMARY_DESC_PAT = SUMMARY_PAT + ': %s'
   LENGTH_FACTOR = 3  # Maximum allowed length relative to maximum known length
 
   def __new__(cls, infile=None):
@@ -290,18 +282,18 @@ class BinaryExtracter(binary.Extracter):
 
   def ExtractHemisphere(self):  # pylint: disable=too-many-return-statements
     """Extract a Hemisphere binary item from the input stream."""
-    if not self.line.startswith(self.SYNC):
+    if not self.line.startswith(Message.SYNC):
       return None, 0
     # Binary message may have embedded apparent EOLs
     while True:
       try:
-        _, msgtype, length = self.HEADER.unpack(self.line[:self.HDR_SIZE])
+        _, msgtype, length = Message.HEADER.unpack(self.line[:Message.HDR_SIZE])
       # Just in case header contains apparent EOL
       except binary.StructError:
         if not self.GetLine():
           return None, 0
         continue
-      needed = length + self.OVERHEAD - len(self.line)
+      needed = length + Message.OVERHEAD - len(self.line)
       if needed > 0:
         if length > BinaryParser.MAX_LENGTH * self.LENGTH_FACTOR:
           return None, 0
@@ -311,12 +303,12 @@ class BinaryExtracter(binary.Extracter):
       break
     if needed < 0:  # If too much data (improperly terminated)
       return None, 0
-    body = self.line[self.HDR_SIZE:-self.TRL_SIZE]
-    checksum, end = self.TRAILER.unpack(self.line[-self.TRL_SIZE:])
+    body = self.line[Message.HDR_SIZE:-Message.TRL_SIZE]
+    checksum, end = Message.TRAILER.unpack(self.line[-Message.TRL_SIZE:])
     actual_checksum = _Checksum(body)
-    if actual_checksum != checksum or end != self.END:
+    if actual_checksum != checksum or end != Message.END:
       return None, 0
-    consumed = length + self.OVERHEAD
+    consumed = length + Message.OVERHEAD
     return Message(data=body, length=length, msgtype=msgtype), consumed
 
 # Need a global handle on this while defining the class
@@ -325,12 +317,12 @@ struct_dict = {}  # pylint: disable=invalid-name
 
 def MakeParser(name, pattern):
   """Create a Hemisphere binary parser."""
-  return binary.MakeParser(name, ENDIAN_PREFIX, struct_dict, pattern)
+  return binary.MakeParser(name, Message.ENDIAN_PREFIX, struct_dict, pattern)
 
 
 def DefineParser(name, pattern):
   """Define a Hemisphere binary parser."""
-  binary.DefineParser(name, ENDIAN_PREFIX, struct_dict, pattern)
+  binary.DefineParser(name, Message.ENDIAN_PREFIX, struct_dict, pattern)
 
 
 class BinaryParser(binary.Parser):
