@@ -27,11 +27,11 @@ class Constants(nmea.Constants):  # pylint: disable=too-few-public-methods
   """Class for various constant definitions."""
 
 
-class Formatter(generic.Formatter):
+class NmeaFormatter(generic.Formatter):
   """Class for NMEA formatter objects."""
-  EXTRACTER = nmea.Extracter
-  PARSER = nmea.Parser
-  DECODER = nmea.Decoder
+  EXTRACTER = nmea.NmeaExtracter
+  PARSER = nmea.NmeaParser
+  DECODER = nmea.NmeaDecoder
 
   FORMATTER_DICT = generic.Formatter.FORMATTER_DICT.copy()
 
@@ -352,3 +352,7 @@ class Formatter(generic.Formatter):
                                            Constants.SIGNAL_DECODE))
     self.Send(4, ''.join(status_list))
   FORMATTER_DICT[PARSER.GetParser('GPGBS')] = FormatGBS
+
+
+class Formatter(NmeaFormatter):
+  """Class for generic NMEA formatter."""

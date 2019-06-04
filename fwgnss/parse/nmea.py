@@ -89,11 +89,12 @@ class Sentence(generic.TextItem):
     return reduce(operator.xor, bytearray(data, encoding=cls.TEXT_ENCODING), 0)
 
 
-class Extracter(generic.Extracter):
+class NmeaExtracter(generic.Extracter):
   """Class for NMEA extracter."""
+  # Use this for vendor-specific subclassing.
   def __new__(cls, infile=None):
-    self = super(Extracter, cls).__new__(cls, infile)
-    self.AddExtracter(Extracter, 'ExtractNmea')
+    self = super(NmeaExtracter, cls).__new__(cls, infile)
+    self.AddExtracter(NmeaExtracter, 'ExtractNmea')
     self.parse_map['NMEA'] = Sentence.PARSE_CLASS
     return self
 
@@ -142,8 +143,9 @@ def MakeParser(name, pattern):
   return parser, len(parser._fields)
 
 
-class Parser(generic.Parser):
+class NmeaParser(generic.Parser):
   """Class for NMEA sentence parser."""
+  # Use this for vendor-specific subclassing.
   NMEA_DICT = {}
 
   @classmethod
@@ -477,15 +479,16 @@ class Parser(generic.Parser):
       return cls.PARSED._make(item.data[1:11])
   NMEA_DICT['GPGBS'] = ParseGBS
 
-Sentence.PARSE_CLASS = Parser
+Sentence.PARSE_CLASS = NmeaParser
 
 
-class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
+class NmeaDecoder(generic.Decoder):  # pylint: disable=too-many-public-methods
   """Class for NMEA sentence decoder."""
+  # Use this for vendor-specific subclassing.
   DECODER_DICT = generic.Decoder.DECODER_DICT
 
   def __init__(self):
-    super(Decoder, self).__init__()
+    super(NmeaDecoder, self).__init__()
     self._last_gsa = {}
     self._last_grs = {}
     self._gsv_dict = {}
@@ -600,8 +603,8 @@ class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
     return self.DecGGA(
         time, lat, lat_h, lon, lon_h, num_sats, hdop,
         alt, alt_u, geoid, geoid_u, age)
-  DECODER_DICT[Parser.ParseGGA] = DecodeGGA
-  DECODER_DICT[Parser.ParseGNS] = DecodeGGA
+  DECODER_DICT[NmeaParser.ParseGGA] = DecodeGGA
+  DECODER_DICT[NmeaParser.ParseGNS] = DecodeGGA
 
   GGA_QUALITY_DECODE = {
       '0': 'Invalid',
@@ -632,7 +635,7 @@ class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
       return None
     lat, lat_h, lon, lon_h = self.DecodeNmeaLL(parsed)
     return self.DecGLL(time, lat, lat_h, lon, lon_h)
-  DECODER_DICT[Parser.ParseGLL] = DecodeGLL
+  DECODER_DICT[NmeaParser.ParseGLL] = DecodeGLL
 
   DecVTG = collections.namedtuple('dVTG', 'track_t track_m speed_n speed_k')
   def DecodeVTG(self, item):
@@ -643,7 +646,7 @@ class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
     speed_n = self.DecodeFloat(parsed.speed_n[0])
     speed_k = self.DecodeFloat(parsed.speed_k[0])
     return self.DecVTG(track_t, track_m, speed_n, speed_k)
-  DECODER_DICT[Parser.ParseVTG] = DecodeVTG
+  DECODER_DICT[NmeaParser.ParseVTG] = DecodeVTG
 
   UNITS_MAP = {
       'T': 'True',
@@ -663,7 +666,7 @@ class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
     zone_hour, zone_min = map(int, parsed.zone)
     zone = zone_hour * 60 + zone_min
     return self.DecZDA(time, dtime, zone)
-  DECODER_DICT[Parser.ParseZDA] = DecodeZDA
+  DECODER_DICT[NmeaParser.ParseZDA] = DecodeZDA
 
   DecRMC = collections.namedtuple(
       'dRMC',
@@ -682,7 +685,7 @@ class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
     dtime = self.DecodeNmeaDateTime(parsed, time)
     return self.DecRMC(time, dtime, lat, lat_h, lon, lon_h,
                        speed_n, track_t, mag_var, mag_var_h)
-  DECODER_DICT[Parser.ParseRMC] = DecodeRMC
+  DECODER_DICT[NmeaParser.ParseRMC] = DecodeRMC
 
   RMC_STATUS_DECODE = {'A': 'Valid', 'V': 'Invalid'}
 
@@ -702,7 +705,7 @@ class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
     latoff, latoff_h, lonoff, lonoff_h = self.DecodeNmeaLL(parsed)
     altoff = self.DecodeFloat(parsed.alts[0])
     return self.DecDTM(latoff, latoff_h, lonoff, lonoff_h, altoff)
-  DECODER_DICT[Parser.ParseDTM] = DecodeDTM
+  DECODER_DICT[NmeaParser.ParseDTM] = DecodeDTM
 
   GSA_VIEW = collections.namedtuple(
       'dGSAsat',
@@ -762,7 +765,7 @@ class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
                        pdop=pdop, hdop=hdop, vdop=vdop,
                        system=system,
                        sig_residuals=tuple(res_list))
-  DECODER_DICT[Parser.ParseGSA] = DecodeGSA
+  DECODER_DICT[NmeaParser.ParseGSA] = DecodeGSA
 
   GSA_ACQ_MODE_DECODE = {'M': 'Manual', 'A': 'Automatic'}
   GSA_POS_MODE_DECODE = {'1': 'No fix', '2': '2D', '3': '3D'}
@@ -798,7 +801,7 @@ class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
       saved[signal] = residuals
     return self.DecGRS(time=time, mode=mode, residuals=tuple(residuals),
                        system=system, signal=signal, sat_residuals=res_list)
-  DECODER_DICT[Parser.ParseGRS] = DecodeGRS
+  DECODER_DICT[NmeaParser.ParseGRS] = DecodeGRS
 
   GRS_MODE_DECODE = {0: 'Last used', 1: 'Recomputed'}
 
@@ -880,8 +883,8 @@ class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
         time=self._gsv_time, system=system, signal=signal,
         in_view=entry[2], sat_views=entry[3]
         )
-  DECODER_DICT[Parser.ParseGPGSV] = DecodeGSV
-  DECODER_DICT[Parser.ParseGLGSV] = DecodeGSV
+  DECODER_DICT[NmeaParser.ParseGPGSV] = DecodeGSV
+  DECODER_DICT[NmeaParser.ParseGLGSV] = DecodeGSV
 
   DecGST = collections.namedtuple(
       'dGST',
@@ -904,7 +907,7 @@ class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
         time, rms_err, major_err, minor_err, major_dir,
         lat_err, lon_err, alt_err
         )
-  DECODER_DICT[Parser.ParseGST] = DecodeGST
+  DECODER_DICT[NmeaParser.ParseGST] = DecodeGST
 
   @classmethod
   def _MakeRRESat(cls, sat_entry):
@@ -929,7 +932,7 @@ class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
       return None
     return self.DecRRE(num_used=num_used, residuals=sat_list,
                        horiz_err=horiz_err, vert_err=vert_err)
-  DECODER_DICT[Parser.ParseRRE] = DecodeRRE
+  DECODER_DICT[NmeaParser.ParseRRE] = DecodeRRE
 
   DecGBS = collections.namedtuple(
       'dGBS',
@@ -958,4 +961,16 @@ class Decoder(generic.Decoder):  # pylint: disable=too-many-public-methods
         time, lat_err, lon_err, alt_err, bad_sat_view,
         fault_prob, range_bias, range_bias_sd, system, signal
         )
-  DECODER_DICT[Parser.ParseGBS] = DecodeGBS
+  DECODER_DICT[NmeaParser.ParseGBS] = DecodeGBS
+
+
+class Extracter(NmeaExtracter):
+  """Class for generic NMEA extracter."""
+
+
+class Parser(NmeaParser):
+  """Class for generic NMEA parser."""
+
+
+class Decoder(NmeaDecoder):
+  """Class for generic NMEA decoder."""

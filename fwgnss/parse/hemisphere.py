@@ -37,7 +37,8 @@ class Constants(nmea.Constants,  # pylint: disable=too-few-public-methods
 
 # Hemisphere/Geneq NMEA additions
 
-class NmeaParser(nmea.Parser):
+
+class NmeaParser(nmea.NmeaParser):
   """Class for Hemisphere NMEA parser (adds vendor sentences)."""
   NMEA_DICT = nmea.Parser.NMEA_DICT
 
@@ -123,9 +124,9 @@ class NmeaParser(nmea.Parser):
 nmea.Sentence.PARSE_CLASS = NmeaParser
 
 
-class NmeaDecoder(nmea.Decoder):
+class NmeaDecoder(nmea.NmeaDecoder):
   """Hemisphere/Geneq added NMEA sentence decoder."""
-  DECODER_DICT = nmea.Decoder.DECODER_DICT
+  DECODER_DICT = nmea.NmeaDecoder.DECODER_DICT
 
   GBS_FLAG_DECODE = {'0': 'Good', '1': 'Warning', '2': 'Bad or fault'}
 
@@ -1166,7 +1167,7 @@ class BinaryDecoder(binary.Decoder):
   DECODER_DICT[BinaryParser.Bin100] = DecodeBin100
 
 
-class Extracter(nmea.Extracter, BinaryExtracter, ResponseExtracter):
+class Extracter(nmea.NmeaExtracter, BinaryExtracter, ResponseExtracter):
   """Class for combined extracter."""
 
 

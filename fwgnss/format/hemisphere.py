@@ -31,12 +31,12 @@ class NmeaConstants(nmea.Constants):  # pylint: disable=too-few-public-methods
   """Class for various NMEA-related constant definitions."""
 
 
-class NmeaFormatter(nmea.Formatter):
+class NmeaFormatter(nmea.NmeaFormatter):
   """Class for Hemisphere/Geneq NMEA formatter objects."""
   PARSER = hemisphere.NmeaParser
   DECODER = hemisphere.NmeaDecoder
 
-  FORMATTER_DICT = nmea.Formatter.FORMATTER_DICT.copy()
+  FORMATTER_DICT = nmea.NmeaFormatter.FORMATTER_DICT.copy()
 
   # Pylint seems to be too dumb to realize that the 'decoder' instance
   # variable here will point to an instance of parse_nmea.Decoder, rather
