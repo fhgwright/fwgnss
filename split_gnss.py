@@ -29,13 +29,7 @@ try:
 except NameError:
   from functools import reduce  # pylint: disable=redefined-builtin
 
-from fwgnss.parse import binary as parse_binary
-from fwgnss.parse import generic as parse_generic
-from fwgnss.parse import hemisphere as parse_hemisphere
-from fwgnss.parse import nmea as parse_nmea
-
-Extracter = parse_hemisphere.Extracter
-
+from fwgnss.parse import combined
 
 DUMMY_TIME = '??????.??'
 
@@ -115,7 +109,7 @@ def GetBundledNmeaData(extracter):
   other_data = []
   gsa_data = []
   OTHER_TYPES = (  # pylint: disable=invalid-name
-      parse_generic.ControlItem, parse_binary.BinaryItem
+      combined.ControlItem, combined.BinaryItem
       )
   for item in extracter.GetItems():
 
@@ -123,7 +117,7 @@ def GetBundledNmeaData(extracter):
       other_data.append(item)
       continue
 
-    if not isinstance(item, parse_nmea.Sentence):
+    if not isinstance(item, combined.Sentence):
       continue
 
     data = item.data
@@ -233,7 +227,7 @@ def main(argv):
   control_log = []
   binary_log = []
   log_time = ''
-  extracter = Extracter(parsed_args.input)
+  extracter = combined.Extracter(parsed_args.input)
   nmea_break = None
   lb = 0  # pylint: disable=invalid-name
 
@@ -254,7 +248,7 @@ def main(argv):
         DumpLogs(parsed_args.log_other, log_time, control_log, binary_log)
         log_time = nmea_time
 
-      if isinstance(item, parse_nmea.Sentence):
+      if isinstance(item, combined.Sentence):
         DumpLogs(parsed_args.log_other, log_time, control_log, binary_log)
         if exclude_times:
           excluded = CheckTimeList(nmea_time, exclude_times)
@@ -274,12 +268,12 @@ def main(argv):
             pass
         continue
 
-      if isinstance(item, parse_generic.ControlItem):
+      if isinstance(item, combined.ControlItem):
         if parsed_args.log_other and not parsed_args.exclude_control:
           control_log.append(item.LogText())
         continue
 
-      if isinstance(item, parse_hemisphere.Message):
+      if isinstance(item, combined.BinaryItem):
         msgtype = item.msgtype
         if include_bin is not None and not msgtype in include_bin:
           continue

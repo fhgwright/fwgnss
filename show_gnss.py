@@ -23,10 +23,9 @@ from __future__ import absolute_import, print_function, division
 import argparse
 import sys
 
-from fwgnss.format import nmea as format_nmea
-from fwgnss.format import hemisphere as format_hemisphere
+from fwgnss.format import combined
 
-VENDOR_MODULES = [format_hemisphere]
+# VENDOR_MODULES = [format_hemisphere]
 
 
 def ParseArgs(argv):
@@ -59,6 +58,7 @@ def ParseArgs(argv):
   return parser.parse_args(argv)
 
 
+_ = '''
 def GetFormatClass(vendor_arg=''):
   """Get proper formatter for specified vendor."""
   vendor = vendor_arg.capitalize()
@@ -68,6 +68,7 @@ def GetFormatClass(vendor_arg=''):
   else:
     module = format_nmea
   return module.Formatter
+'''
 
 
 def GetFilterList(arg, parse_map):
@@ -96,7 +97,8 @@ def main(argv):
 
   report_errors = not (parsed_args.output and parsed_args.output.isatty())
 
-  format_class = GetFormatClass('Geneq')
+  # format_class = GetFormatClass('Geneq')
+  format_class = combined.Formatter
   formatter = format_class(parsed_args.input)
   formatter.dump_raw_data = parsed_args.dump_raw_binary
   formatter.show_gps_time = parsed_args.show_gps_time
