@@ -193,6 +193,20 @@ class Response(generic.TextControlItem):
 
   __slots__ = ()
 
+  @classmethod
+  def Extract(cls, extracter):
+    """Extract a response item from the input stream."""
+    # Valid line must start with response prefix
+    if not extracter.line.startswith(cls.PREFIX_IN):
+      return None, 0
+    length, endlen = extracter.GetEOL()
+    if not endlen:
+      return None, 0  # Discard unterminated line
+    resp = extracter.GetText(extracter.line[cls.PREFIX_LEN:length])
+    if resp is None:
+      return None, 0
+    return cls.Make(resp), length + endlen
+
   def Contents(self):
     return self.CONTENTS_PAT % self.data
 
@@ -212,16 +226,7 @@ class ResponseExtracter(generic.Extracter):
 
   def ExtractResponse(self):
     """Extract a response item from the input stream."""
-    # Valid line must start with response prefix
-    if not self.line.startswith(Response.PREFIX_IN):
-      return None, 0
-    length, endlen = self.GetEOL()
-    if not endlen:
-      return None, 0  # Discard unterminated line
-    resp = self.GetText(self.line[Response.PREFIX_LEN:length])
-    if resp is None:
-      return None, 0
-    return Response.Make(resp), length + endlen
+    return Response.Extract(self)
 
 
 # Hemisphere/Geneq binary messages
@@ -245,6 +250,38 @@ class Message(binary.BinaryDataItem):
   SUMMARY_DESC_PAT = SUMMARY_PAT + ': %s'
 
   __slots__ = ()
+
+  @classmethod
+  def Extract(cls, extracter):  # pylint: disable=too-many-return-statements
+    """Extract a Hemisphere binary item from the input stream."""
+    if not extracter.line.startswith(cls.SYNC):
+      return None, 0
+    # Binary message may have embedded apparent EOLs
+    while True:
+      try:
+        _, msgtype, length = cls.HEADER.unpack(extracter.line[:cls.HDR_SIZE])
+      # Just in case header contains apparent EOL
+      except binary.StructError:
+        if not extracter.GetLine():
+          return None, 0
+        continue
+      needed = length + cls.OVERHEAD - len(extracter.line)
+      if needed > 0:
+        if length > BinaryParser.MAX_LENGTH * extracter.LENGTH_FACTOR:
+          return None, 0
+        if not extracter.GetLine(needed):
+          return None, 0
+        continue
+      break
+    if needed < 0:  # If too much data (improperly terminated)
+      return None, 0
+    body = extracter.line[cls.HDR_SIZE:-cls.TRL_SIZE]
+    checksum, end = cls.TRAILER.unpack(extracter.line[-cls.TRL_SIZE:])
+    actual_checksum = cls.Checksum(body)
+    if actual_checksum != checksum or end != cls.END:
+      return None, 0
+    consumed = length + cls.OVERHEAD
+    return cls.Make(data=body, length=length, msgtype=msgtype), consumed
 
   @staticmethod
   def Checksum(data):
@@ -286,34 +323,8 @@ class BinaryExtracter(binary.Extracter):
 
   def ExtractHemisphere(self):  # pylint: disable=too-many-return-statements
     """Extract a Hemisphere binary item from the input stream."""
-    if not self.line.startswith(Message.SYNC):
-      return None, 0
-    # Binary message may have embedded apparent EOLs
-    while True:
-      try:
-        _, msgtype, length = Message.HEADER.unpack(self.line[:Message.HDR_SIZE])
-      # Just in case header contains apparent EOL
-      except binary.StructError:
-        if not self.GetLine():
-          return None, 0
-        continue
-      needed = length + Message.OVERHEAD - len(self.line)
-      if needed > 0:
-        if length > BinaryParser.MAX_LENGTH * self.LENGTH_FACTOR:
-          return None, 0
-        if not self.GetLine(needed):
-          return None, 0
-        continue
-      break
-    if needed < 0:  # If too much data (improperly terminated)
-      return None, 0
-    body = self.line[Message.HDR_SIZE:-Message.TRL_SIZE]
-    checksum, end = Message.TRAILER.unpack(self.line[-Message.TRL_SIZE:])
-    actual_checksum = Message.Checksum(body)
-    if actual_checksum != checksum or end != Message.END:
-      return None, 0
-    consumed = length + Message.OVERHEAD
-    return Message.Make(data=body, length=length, msgtype=msgtype), consumed
+    return Message.Extract(self)
+
 
 # Need a global handle on this while defining the class
 struct_dict = {}  # pylint: disable=invalid-name

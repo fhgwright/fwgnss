@@ -156,6 +156,22 @@ class Comment(TextItem):
 
   __slots__ = ()
 
+  @classmethod
+  def Extract(cls, extracter):
+    """Extracter for comment lines."""
+    if  not extracter.line.startswith(cls.PREFIX_IN):
+      return None, 0
+    length, endlen = extracter.GetEOL()
+    if not endlen or length > cls.MAX_LENGTH:
+      return None, 0
+    data = extracter.GetText(extracter.line[:length])
+    if data is None:
+      return None, 0
+    for char in bytearray(data):
+      if char in cls.BAD_CHARS:
+        return None, 0
+    return cls.Make(data=data, length=length), length + endlen
+
   def Contents(self):
     return self.data
 
@@ -325,18 +341,7 @@ class CommentExtracter(Extracter):
 
   def ExtractComment(self):
     """Extracter for comment lines."""
-    if  not self.line.startswith(Comment.PREFIX_IN):
-      return None, 0
-    length, endlen = self.GetEOL()
-    if not endlen or length > Comment.MAX_LENGTH:
-      return None, 0
-    data = self.GetText(self.line[:length])
-    if data is None:
-      return None, 0
-    for char in bytearray(data):
-      if char in Comment.BAD_CHARS:
-        return None, 0
-    return Comment.Make(data=data, length=length), length + endlen
+    return Comment.Extract(self)
 
 
 class Parser(Debuggable):

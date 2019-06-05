@@ -61,6 +61,56 @@ class Sentence(generic.TextItem):
     super(Sentence, self).__init__(data, length, msgtype)
     self.has_checksum = has_checksum
 
+  @classmethod
+  def Extract(cls, extracter):  # pylint: disable=too-many-return-statements
+    """Extract an NMEA sentence from the input stream."""
+    # Valid line must have at least two chars and start with prefix
+    if len(extracter.line) < 2 or not extracter.line.startswith(cls.PREFIX_IN):
+      return None, 0
+
+    length, endlen = extracter.GetEOL()
+    if not endlen:
+      return None, 0  # Discard unterminated line
+
+    # Note that Hemisphere response lines will also match up to this point
+    # (if this extracter precedes the Control extracter), but will be
+    # rejected by the re.match below.  Since response lines are rare, it's
+    # not worth worrying about the cost of getting all the way into the
+    # re.match before rejecting them.
+
+    # Keep bytes version of body for checksum
+    bbody = extracter.line[1:length]
+    body = extracter.GetText(bbody)
+    if not body:  # Here if it's not really NMEA
+      return None, 0
+    data = body.split(cls.SEPARATOR)
+    if len(data) < 2 or not cls.TYPE_RE.match(data[0]):
+      return None, 0
+    last = data[-1]
+    has_checksum = len(last) >= 3 and last[-3] == cls.CHECKSUM_FLAG
+    if has_checksum:
+      try:
+        checksum = int(last[-2:], 16)
+      except ValueError:
+        return None, 0
+      data[-1] = last[:-3]
+      actual_checksum = cls.ChecksumBytes(bbody[:-3])
+      if actual_checksum != checksum:
+        return None, 0
+    item = cls.Make(data=data, msgtype=data[0].upper(),
+                    has_checksum=has_checksum)
+    return item, length + endlen
+
+  @staticmethod
+  def ChecksumBytes(data):
+    """Compute NMEA checksum of data supplied as bytes."""
+    return reduce(operator.xor, bytearray(data), 0)
+
+  @classmethod
+  def _ChecksumString(cls, data):
+    """Compute NMEA checksum of data supplied as string."""
+    return reduce(operator.xor, bytearray(data, encoding=cls.TEXT_ENCODING), 0)
+
   def Contents(self):
     line = self.SEPARATOR.join(self.data)
     if self.has_checksum:
@@ -78,16 +128,6 @@ class Sentence(generic.TextItem):
   def LogText(self):
     return self.SEPARATOR.join(self.data)
 
-  @staticmethod
-  def ChecksumBytes(data):
-    """Compute NMEA checksum of data supplied as bytes."""
-    return reduce(operator.xor, bytearray(data), 0)
-
-  @classmethod
-  def _ChecksumString(cls, data):
-    """Compute NMEA checksum of data supplied as string."""
-    return reduce(operator.xor, bytearray(data, encoding=cls.TEXT_ENCODING), 0)
-
 
 class NmeaExtracter(generic.Extracter):
   """Class for NMEA extracter."""
@@ -100,42 +140,7 @@ class NmeaExtracter(generic.Extracter):
 
   def ExtractNmea(self):  # pylint: disable=too-many-return-statements
     """Extract an NMEA sentence from the input stream."""
-    # Valid line must have at least two chars and start with prefix
-    if len(self.line) < 2 or not self.line.startswith(Sentence.PREFIX_IN):
-      return None, 0
-
-    length, endlen = self.GetEOL()
-    if not endlen:
-      return None, 0  # Discard unterminated line
-
-    # Note that Hemisphere response lines will also match up to this point
-    # (if this extracter precedes the Control extracter), but will be
-    # rejected by the re.match below.  Since response lines are rare, it's
-    # not worth worrying about the cost of getting all the way into the
-    # re.match before rejecting them.
-
-    # Keep bytes version of body for checksum
-    bbody = self.line[1:length]
-    body = self.GetText(bbody)
-    if not body:  # Here if it's not really NMEA
-      return None, 0
-    data = body.split(Sentence.SEPARATOR)
-    if len(data) < 2 or not Sentence.TYPE_RE.match(data[0]):
-      return None, 0
-    last = data[-1]
-    has_checksum = len(last) >= 3 and last[-3] == Sentence.CHECKSUM_FLAG
-    if has_checksum:
-      try:
-        checksum = int(last[-2:], 16)
-      except ValueError:
-        return None, 0
-      data[-1] = last[:-3]
-      actual_checksum = Sentence.ChecksumBytes(bbody[:-3])
-      if actual_checksum != checksum:
-        return None, 0
-    item = Sentence.Make(data=data, msgtype=data[0].upper(),
-                         has_checksum=has_checksum)
-    return item, length + endlen
+    return Sentence.Extract(self)
 
 
 def MakeParser(name, pattern):
