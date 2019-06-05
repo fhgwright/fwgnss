@@ -23,7 +23,6 @@ from . import generic
 from . import nmea
 from ..parse import hemisphere
 
-
 VENDORS = set(['Hemisphere', 'Geneq'])
 
 
@@ -92,7 +91,7 @@ class BinaryFormatter(generic.BinaryFormatter):
   PARSER = hemisphere.BinaryParser
   DECODER = hemisphere.BinaryDecoder
 
-  FORMATTER_DICT = generic.Formatter.FORMATTER_DICT.copy()
+  FORMATTER_DICT = generic.BinaryFormatter.FORMATTER_DICT.copy()
 
   # Pylint seems to be too dumb to realize that the 'decoder' instance
   # variable here will point to an instance of hemisphere.BinaryDecoder,
