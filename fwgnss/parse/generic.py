@@ -101,10 +101,9 @@ class BaseItem(Debuggable):  # pylint:disable=too-many-instance-attributes
     """Return summary text for item."""
     _ = full
 
-  @staticmethod
-  def LogText():
+  def LogText(self):
     """Return item text for logging."""
-    return None
+    return self.Summary()
 
   @classmethod
   def Make(cls, *args, **kwargs):

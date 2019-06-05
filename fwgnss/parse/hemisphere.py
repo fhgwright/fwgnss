@@ -245,8 +245,8 @@ class Message(binary.BinaryDataItem):
   SYNC = b'$BIN'
   END = b'\r\n'
 
-  LOG_PAT = 'Bin%d(%d)'
-  SUMMARY_PAT = '$' + LOG_PAT
+  LOG_PAT = '%d(%d)'
+  SUMMARY_PAT = '$Bin' + LOG_PAT
   SUMMARY_DESC_PAT = SUMMARY_PAT + ': %s'
 
   __slots__ = ()
@@ -302,11 +302,17 @@ class Message(binary.BinaryDataItem):
     """Get message summary text."""
     if len(self.data) != self.length:
       raise ValueError
-    parser = self.parser
+    parser = full and self.parser
     if parser:
       return self.SUMMARY_DESC_PAT % (self.msgtype, self.length,
                                       parser.DESCRIPTION)
     return self.SUMMARY_PAT % (self.msgtype, self.length)
+
+  def LogText(self):
+    """Get message text for logging."""
+    if len(self.data) != self.length:
+      raise ValueError
+    return self.LOG_PAT % (self.msgtype, self.length)
 
 
 class BinaryExtracter(binary.Extracter):

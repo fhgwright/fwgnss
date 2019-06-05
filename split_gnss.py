@@ -282,7 +282,7 @@ def main(argv):
         if parsed_args.binary_out:
           parsed_args.binary_out.write(item.Contents())
         if parsed_args.log_other:
-          binary_log.append('%d(%d)' % (msgtype, item.length))
+          binary_log.append(item.LogText())
         continue
 
     DumpLogs(parsed_args.log_other, log_time, control_log, binary_log)
