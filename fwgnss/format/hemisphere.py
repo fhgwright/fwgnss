@@ -35,7 +35,7 @@ class NmeaFormatter(nmea.NmeaFormatter):
   PARSER = hemisphere.NmeaParser
   DECODER = hemisphere.NmeaDecoder
 
-  FORMATTER_DICT = nmea.NmeaFormatter.FORMATTER_DICT.copy()
+  FORMATTER_DICT = {}
 
   # Pylint seems to be too dumb to realize that the 'decoder' instance
   # variable here will point to an instance of parse_nmea.Decoder, rather
@@ -91,7 +91,7 @@ class BinaryFormatter(generic.BinaryFormatter):
   PARSER = hemisphere.BinaryParser
   DECODER = hemisphere.BinaryDecoder
 
-  FORMATTER_DICT = generic.BinaryFormatter.FORMATTER_DICT.copy()
+  FORMATTER_DICT = {}
 
   # Pylint seems to be too dumb to realize that the 'decoder' instance
   # variable here will point to an instance of hemisphere.BinaryDecoder,
@@ -511,6 +511,3 @@ class Formatter(NmeaFormatter, BinaryFormatter):
   EXTRACTER = hemisphere.Extracter
   PARSER = hemisphere.Parser
   DECODER = hemisphere.Decoder
-
-  FORMATTER_DICT = NmeaFormatter.FORMATTER_DICT.copy()
-  FORMATTER_DICT.update(BinaryFormatter.FORMATTER_DICT)

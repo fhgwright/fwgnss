@@ -33,7 +33,7 @@ class NmeaFormatter(generic.Formatter):
   PARSER = nmea.NmeaParser
   DECODER = nmea.NmeaDecoder
 
-  FORMATTER_DICT = generic.Formatter.FORMATTER_DICT.copy()
+  FORMATTER_DICT = {}
 
   # Pylint seems to be too dumb to realize that the 'decoder' instance
   # variable here will point to an instance of nmea.Decoder, rather

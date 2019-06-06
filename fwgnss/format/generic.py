@@ -45,8 +45,6 @@ class Formatter(Debuggable):
   """Base class for formatter objects."""
   SPACES = '              '
 
-  FORMATTER_DICT = {}
-
   # Formatter levels to allow reproducing older behavior
   FMT_ORIGINAL = 0    # Earliest version with retained results
   FMT_UPDATED = 1     # With some updates

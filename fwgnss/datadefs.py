@@ -70,8 +70,11 @@ def InterpolateString(string, values):
 
 def BindDictFuncs(name, obj):
   """Bind functions in a dictionary to a given object."""
+  # This merges dictionaries across the MRO chain
   cls = obj.__class__
-  items = getattr(cls, name).items()
-  # Avoid dict comprehension for Python 2.6 compatibility.
-  # Add an empty list to avoid the pylint3 warning.
-  return dict([[x[0], x[1].__get__(obj, cls)] for x in items] + [])
+  result = {}
+  # Scan in reverse order so that overwrites follow MRO priority
+  for this in reversed(cls.mro()):
+    for key, val in getattr(this, name, {}).items():
+      result[key] = val.__get__(obj, cls)
+  return result

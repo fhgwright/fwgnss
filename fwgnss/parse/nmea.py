@@ -491,7 +491,7 @@ Sentence.PARSE_CLASS = NmeaParser
 class NmeaDecoder(generic.Decoder):  # pylint: disable=too-many-public-methods
   """Class for NMEA sentence decoder."""
   # Use this for vendor-specific subclassing.
-  DECODER_DICT = generic.Decoder.DECODER_DICT
+  DECODER_DICT = {}
 
   def __init__(self):
     super(NmeaDecoder, self).__init__()

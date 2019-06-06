@@ -36,3 +36,17 @@ class Extracter(  # pylint: disable=too-many-ancestors
     hemisphere.Extracter,
     ):
   """Combined Extracter class."""
+
+
+class Parser(  # pylint: disable=too-many-ancestors
+    nmea.Parser,
+    hemisphere.Parser,
+    ):
+  """Combined Parser class."""
+
+
+class Decoder(  # pylint: disable=too-many-ancestors
+    nmea.Decoder,
+    hemisphere.Decoder,
+    ):
+  """Combined Decoder class."""

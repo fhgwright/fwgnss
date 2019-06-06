@@ -378,7 +378,6 @@ class Parser(Debuggable):
 
 class Decoder(Debuggable):
   """Base class for item decoders."""
-  DECODER_DICT = {}
 
   def __init__(self):
     self.last_time = None

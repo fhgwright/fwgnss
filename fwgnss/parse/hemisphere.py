@@ -126,7 +126,7 @@ nmea.Sentence.PARSE_CLASS = NmeaParser
 
 class NmeaDecoder(nmea.NmeaDecoder):
   """Hemisphere/Geneq added NMEA sentence decoder."""
-  DECODER_DICT = nmea.NmeaDecoder.DECODER_DICT
+  DECODER_DICT = {}
 
   GBS_FLAG_DECODE = {'0': 'Good', '1': 'Warning', '2': 'Bad or fault'}
 
@@ -591,7 +591,7 @@ del struct_dict
 
 class BinaryDecoder(binary.Decoder):
   """Hemisphere/Geneq binary message decoder."""
-  DECODER_DICT = binary.Decoder.DECODER_DICT
+  DECODER_DICT = {}
 
   CN0_OFFSET = 30  # Offset between binary SNR values and dBHz values
   MAX_TRACK_TIME = 25.5  # Maximum reported phase track time
