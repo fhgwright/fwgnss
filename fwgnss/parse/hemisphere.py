@@ -275,7 +275,7 @@ class Message(binary.BinaryDataItem):
       break
     if needed < 0:  # If too much data (improperly terminated)
       return None, 0
-    body = extracter.line[cls.HDR_SIZE:-cls.TRL_SIZE]
+    body = bytearray(extracter.line[cls.HDR_SIZE:-cls.TRL_SIZE])
     checksum, end = cls.TRAILER.unpack(extracter.line[-cls.TRL_SIZE:])
     actual_checksum = cls.Checksum(body)
     if actual_checksum != checksum or end != cls.END:
@@ -287,7 +287,7 @@ class Message(binary.BinaryDataItem):
   def Checksum(data):
     """Compute checksum of data."""
     # The Hemisphere checksum is just a simple sum.
-    return sum(bytearray(data))
+    return sum(data)
 
   def Contents(self):
     """Get full message content."""
@@ -296,7 +296,7 @@ class Message(binary.BinaryDataItem):
     checksum = self.Checksum(self.data)
     header = self.HEADER.pack(self.SYNC, self.msgtype, self.length)
     trailer = self.TRAILER.pack(checksum, self.END)
-    return b''.join([header, self.data, trailer])
+    return b''.join([header, bytes(self.data), trailer])
 
   def Summary(self, full=False):
     """Get message summary text."""

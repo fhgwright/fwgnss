@@ -93,7 +93,7 @@ class Message(binary.BinaryDataItem):
       break
     hlength = cls.HDR_SIZE + length
     tlength = hlength + cls.TRL_SIZE
-    cbody = extracter.line[cls.CKS_START:hlength]
+    cbody = bytearray(extracter.line[cls.CKS_START:hlength])
     body = cbody[cls.HDR_REST:]
     checksum = cls.TRAILER.unpack(extracter.line[hlength:tlength])
     actual_checksum = cls.Checksum(cbody)
@@ -106,7 +106,7 @@ class Message(binary.BinaryDataItem):
   def Checksum(data):
     """Fletcher checksum algorithm, with modulus=256."""
     ck_a = ck_b = 0
-    for val in bytearray(data):
+    for val in data:
       ck_a += val
       ck_b += ck_a
     return ck_a & 0xFF, ck_b & 0xFF
@@ -119,7 +119,7 @@ class Message(binary.BinaryDataItem):
     header = self.HEADER.pack(self.SYNC, self.msgtype, self.subtype,
                               self.length)
     trailer = self.TRAILER.pack(*checksum)
-    return b''.join([header, self.data, trailer])
+    return b''.join([header, bytes(self.data), trailer])
 
   def Summary(self, full=False):
     """Get message summary text."""
