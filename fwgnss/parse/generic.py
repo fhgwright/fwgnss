@@ -80,11 +80,11 @@ class BaseItem(Debuggable):  # pylint:disable=too-many-instance-attributes
                'parser', 'parsed', 'parse_error',
                'decoded', 'decode_error')
 
-  def __init__(self, data=None, length=None, msgtype=None):
+  def __init__(self, data=None, length=None, msgtype=None, subtype=None):
     self.data = data
     self.length = length or len(data)
     self.msgtype = msgtype
-    self.subtype = None
+    self.subtype = subtype
     self.parser = None
     self.parsed = None
     self.parse_error = None

@@ -23,6 +23,7 @@ from . import binary
 from . import generic
 from . import hemisphere
 from . import nmea
+from . import ublox
 
 # Convenience definitions
 
@@ -34,6 +35,7 @@ Sentence = nmea.Sentence
 class Extracter(  # pylint: disable=too-many-ancestors
     nmea.Extracter,
     hemisphere.Extracter,
+    ublox.Extracter,
     ):
   """Combined Extracter class."""
 
@@ -41,6 +43,7 @@ class Extracter(  # pylint: disable=too-many-ancestors
 class Parser(  # pylint: disable=too-many-ancestors
     nmea.Parser,
     hemisphere.Parser,
+    ublox.Parser,
     ):
   """Combined Parser class."""
 
@@ -48,5 +51,6 @@ class Parser(  # pylint: disable=too-many-ancestors
 class Decoder(  # pylint: disable=too-many-ancestors
     nmea.Decoder,
     hemisphere.Decoder,
+    ublox.Decoder,
     ):
   """Combined Decoder class."""

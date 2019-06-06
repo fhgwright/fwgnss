@@ -22,11 +22,13 @@ from __future__ import absolute_import, print_function, division
 from ..parse import combined
 from . import hemisphere
 from . import nmea
+from . import ublox
 
 
 class Formatter(  # pylint: disable=too-many-ancestors
     nmea.Formatter,
     hemisphere.Formatter,
+    ublox.Formatter,
     ):
   """Combined Formatter class."""
   EXTRACTER = combined.Extracter
