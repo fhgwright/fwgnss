@@ -30,6 +30,14 @@ ENDIAN_PREFIXES = {'little': ['<'], 'big': ['>']}
 StructError = struct.error  # pylint: disable=invalid-name
 
 
+class Error(Exception):
+  """Base class for all exceptions defined in this module."""
+
+
+class BadLengthLimit(Error):
+  """Unreasonable length limit for extracter."""
+
+
 class Constants(generic.Constants):  # pylint: disable=too-few-public-methods
   """Class which holds various constant definitions."""
 
@@ -90,6 +98,8 @@ class BinaryItem(generic.Item):
 
 class BinaryDataItem(BinaryItem):
   """Generic binary non-control item from extracter."""
+  LENGTH_LIMIT = 1500  # For sanity check in extracters
+
   __slots__ = ()
 
 

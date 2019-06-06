@@ -265,10 +265,10 @@ class Message(binary.BinaryDataItem):
         if not extracter.GetLine():
           return None, 0
         continue
+      if length > cls.LENGTH_LIMIT:
+        return None, 0
       needed = length + cls.OVERHEAD - len(extracter.line)
       if needed > 0:
-        if length > BinaryParser.MAX_LENGTH * extracter.LENGTH_FACTOR:
-          return None, 0
         if not extracter.GetLine(needed):
           return None, 0
         continue
@@ -317,7 +317,6 @@ class Message(binary.BinaryDataItem):
 
 class BinaryExtracter(binary.Extracter):
   """Hemisphere/Geneq binary message extracter."""
-  LENGTH_FACTOR = 3  # Maximum allowed length relative to maximum known length
 
   def __new__(cls, infile=None):
     self = super(BinaryExtracter, cls).__new__(cls, infile)
@@ -583,6 +582,9 @@ class BinaryParser(binary.Parser):
   MESSAGE_DICT[100] = Bin100
 
   MAX_LENGTH = max([x.PARSER[1].size for x in MESSAGE_DICT.values()])
+  if Message.LENGTH_LIMIT < MAX_LENGTH:
+    raise binary.BadLengthLimit('Limit %d < %d'
+                                % (Message.LENGTH_LIMIT, MAX_LENGTH))
 
 Message.PARSE_CLASS = BinaryParser
 

@@ -83,10 +83,10 @@ class Message(binary.BinaryDataItem):
         if not extracter.GetLine():
           return None, 0
         continue
+      if length > cls.LENGTH_LIMIT:
+        return None, 0
       needed = length + cls.OVERHEAD - len(extracter.line)
       if needed > 0:
-        if length > extracter.LENGTH_LIMIT:
-          return None, 0
         if not extracter.GetLine(needed):
           return None, 0
         continue
@@ -140,7 +140,6 @@ class Message(binary.BinaryDataItem):
 
 class BinaryExtracter(binary.Extracter):
   """u-Blox binary message extracter."""
-  LENGTH_LIMIT = 1000
 
   def __new__(cls, infile=None):
     self = super(BinaryExtracter, cls).__new__(cls, infile)
