@@ -27,17 +27,14 @@ from ..datetime import xdatetime
 
 class Error(Exception):
   """Base class for all exceptions defined in this module."""
-  pass  # pylint: disable=unnecessary-pass
 
 
 class ParseError(Error):
   """Item was not parsed correctly."""
-  pass  # pylint: disable=unnecessary-pass
 
 
 class DecodeError(Error):
   """Item was not decoded correctly."""
-  pass  # pylint: disable=unnecessary-pass
 
 
 # pylint: disable=too-many-instance-attributes,too-many-public-methods
