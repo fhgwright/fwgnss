@@ -221,12 +221,8 @@ class ResponseExtracter(generic.Extracter):
   """Class for Hemisphere response extracter."""
   def __new__(cls, infile=None):
     self = super(ResponseExtracter, cls).__new__(cls, infile)
-    self.AddExtracter(ResponseExtracter, 'ExtractResponse')
+    self.AddExtracter(Response)
     return self
-
-  def ExtractResponse(self):
-    """Extract a response item from the input stream."""
-    return Response.Extract(self)
 
 
 # Hemisphere/Geneq binary messages
@@ -322,13 +318,9 @@ class BinaryExtracter(binary.Extracter):
     self = super(BinaryExtracter, cls).__new__(cls, infile)
     # Prioritize this extracter over NMEA, since NMEA won't reject
     # binary messages quickly.
-    self.AddExtracter(BinaryExtracter, 'ExtractHemisphere', 10)
+    self.AddExtracter(Message, 10)
     self.parse_map['HEMISPHERE'] = Message.PARSE_CLASS
     return self
-
-  def ExtractHemisphere(self):  # pylint: disable=too-many-return-statements
-    """Extract a Hemisphere binary item from the input stream."""
-    return Message.Extract(self)
 
 
 # Need a global handle on this while defining the class

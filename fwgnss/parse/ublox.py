@@ -143,13 +143,9 @@ class BinaryExtracter(binary.Extracter):
 
   def __new__(cls, infile=None):
     self = super(BinaryExtracter, cls).__new__(cls, infile)
-    self.AddExtracter(BinaryExtracter, 'ExtractUblox', 5)
+    self.AddExtracter(Message, 5)
     self.parse_map['UBLOX'] = Message.PARSE_CLASS
     return self
-
-  def ExtractUblox(self):  # pylint: disable=too-many-return-statements
-    """Extract a u-Blox binary item from the input stream."""
-    return Message.Extract(self)
 
 
 # Need a global handle on this while defining the class

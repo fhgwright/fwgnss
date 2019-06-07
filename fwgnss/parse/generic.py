@@ -191,7 +191,7 @@ class Extracter(Debuggable):  # pylint: disable=too-many-instance-attributes
   def __new__(cls, infile=None):
     _ = infile
     self = super(Extracter, cls).__new__(cls)
-    self.extracter_list = []
+    self.extractables = []
     self.extracters = []
     self.parse_map = {}
     return self
@@ -203,47 +203,40 @@ class Extracter(Debuggable):  # pylint: disable=too-many-instance-attributes
     self.linebreak = 0     # To stop on line for debugging
     self.skipped = b''     # Unrecognized data we skipped
     self.extended = False  # True if we needed to extend line to get an item
-    self.extracter_list = self.extracter_list  # Placate pylint 3
+    self.extractables = self.extractables  # Placate pylint 3
     self.parse_map = self.parse_map            # Ditto
     self.BindExtracters()
 
-  def AddExtracter(self, cls, name, prio=0):
-    """Add a new extracter method to list, by name, with priority."""
-    func = getattr(cls, name, None)
-    if not func:
-      return
-    self._AddExtracter(cls, name, func, prio)
-
-  def _AddExtracter(self, cls, name, func, prio):
-    """Add a new extracter method to list, by method object."""
-    for num, ent in enumerate(self.extracter_list):
+  def AddExtracter(self, cls, prio=0):
+    """Add a new extracter item class to list, with priority."""
+    for num, ent in enumerate(self.extractables):
       # Filter out duplicates
-      if ent[2] == func:
+      if ent[1] == cls:
         return
       # Filter out overridden methods from parent classes
-      if isinstance(self, ent[0]) and name == ent[1]:
-        self.extracter_list.pop(num)
+      if isinstance(cls, ent[0]):
+        self.extractables.pop(num)
         break
     # Initially, we reverse the order to compensate for the reversed order
     # in the calls from __init__().  After the initial BindExtracters()
     # call, subsequent additions are at the end.
     if self.extracters:
-      self.extracter_list.append((cls, name, func, prio))
+      self.extractables.append((cls, prio))
     else:
-      self.extracter_list.insert(0, (cls, name, func, prio))
+      self.extractables.insert(0, (cls, prio))
 
   def BindExtracters(self):
-    """Derive a list of bound extracter methods from extracter_list."""
+    """Derive a list of bound extracter methods from extractables."""
     # Sort by descending priorities
-    extracters = sorted(self.extracter_list, key=itemgetter(3), reverse=True)
-    self.extracters = [x[2].__get__(self, x[0]) for x in extracters]
+    extractables = sorted(self.extractables, key=itemgetter(1), reverse=True)
+    self.extracters = [x[0].Extract for x in extractables]
 
   def MergeExtracters(self, other):
     """Merge list of extracters from other extracter into this one."""
     if not isinstance(other, Extracter):
       raise ValueError
-    for cls, name, func, prio in other.extracter_list:
-      self._AddExtracter(cls, name, func, prio)
+    for cls, prio in other.extractables:
+      self.AddExtracter(cls, prio)
     self.BindExtracters()
 
   def GetLine(self, maxlen=LINE_MAX):
@@ -299,7 +292,7 @@ class Extracter(Debuggable):  # pylint: disable=too-many-instance-attributes
           return
       item = None
       for extracter in self.extracters:
-        item, consumed = extracter()
+        item, consumed = extracter(self)
         if item:
           break
       if item:
@@ -335,12 +328,8 @@ class CommentExtracter(Extracter):
   """Class for comment-line extracter."""
   def __new__(cls, infile=None):
     self = super(CommentExtracter, cls).__new__(cls, infile)
-    self.AddExtracter(CommentExtracter, 'ExtractComment')
+    self.AddExtracter(Comment)
     return self
-
-  def ExtractComment(self):
-    """Extracter for comment lines."""
-    return Comment.Extract(self)
 
 
 class Parser(Debuggable):

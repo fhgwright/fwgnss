@@ -134,13 +134,9 @@ class NmeaExtracter(generic.Extracter):
   # Use this for vendor-specific subclassing.
   def __new__(cls, infile=None):
     self = super(NmeaExtracter, cls).__new__(cls, infile)
-    self.AddExtracter(NmeaExtracter, 'ExtractNmea')
+    self.AddExtracter(Sentence)
     self.parse_map['NMEA'] = Sentence.PARSE_CLASS
     return self
-
-  def ExtractNmea(self):  # pylint: disable=too-many-return-statements
-    """Extract an NMEA sentence from the input stream."""
-    return Sentence.Extract(self)
 
 
 def MakeParser(name, pattern):

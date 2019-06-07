@@ -135,13 +135,9 @@ class BinaryExtracter(binary.Extracter):
 
   def __new__(cls, infile=None):
     self = super(BinaryExtracter, cls).__new__(cls, infile)
-    self.AddExtracter(BinaryExtracter, 'ExtractSirf', 5)
+    self.AddExtracter(Message, 5)
     self.parse_map['SIRF'] = Message.PARSE_CLASS
     return self
-
-  def ExtractSirf(self):  # pylint: disable=too-many-return-statements
-    """Extract a SiRF binary item from the input stream."""
-    return Message.Extract(self)
 
 
 # Need a global handle on this while defining the class
