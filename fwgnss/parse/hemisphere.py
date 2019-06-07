@@ -318,7 +318,7 @@ class BinaryExtracter(binary.Extracter):
     self = super(BinaryExtracter, cls).__new__(cls, infile)
     # Prioritize this extracter over NMEA, since NMEA won't reject
     # binary messages quickly.
-    self.AddExtracter(Message, 10)
+    self.AddExtracter(Message, 20)
     self.parse_map['HEMISPHERE'] = Message.PARSE_CLASS
     return self
 

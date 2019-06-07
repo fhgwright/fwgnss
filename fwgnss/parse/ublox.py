@@ -143,7 +143,7 @@ class BinaryExtracter(binary.Extracter):
 
   def __new__(cls, infile=None):
     self = super(BinaryExtracter, cls).__new__(cls, infile)
-    self.AddExtracter(Message, 5)
+    self.AddExtracter(Message, 10)
     self.parse_map['UBLOX'] = Message.PARSE_CLASS
     return self
 
