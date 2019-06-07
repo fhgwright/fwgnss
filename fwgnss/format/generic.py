@@ -22,7 +22,7 @@ from __future__ import absolute_import, print_function, division
 from ..datadefs import BindDictFuncs
 from ..debuggable import Debuggable
 from ..parse import generic  # For pylint-placating dummy defs
-from ..datetime import xdatetime
+from ..systems import xdatetime
 
 
 class Error(Exception):
@@ -41,6 +41,8 @@ class DecodeError(Error):
 class Formatter(Debuggable):
   """Base class for formatter objects."""
   SPACES = '              '
+
+  GPS_LEAP_OFFSET = xdatetime.Constants.GPS_LEAP_OFFSET
 
   # Formatter levels to allow reproducing older behavior
   FMT_ORIGINAL = 0    # Earliest version with retained results
@@ -170,14 +172,14 @@ class Formatter(Debuggable):
     """Format a date/time as either GPS or UTC date/time."""
     if self.show_gps_time:
       return self.EncodeDateTime(dtime, frac_digits,
-                                 fixed_leap=xdatetime.GPS_LEAP_OFFSET) + ' GPS'
+                                 fixed_leap=self.GPS_LEAP_OFFSET) + ' GPS'
     return self.EncodeDateTime(dtime, frac_digits) + ' UTC'
 
   def GetWeekTowStr(self, dtime, frac_digits=3):
     """Format a date/time as a GPS week/sec."""
     dtime_str = self.GetDateTimeStr(dtime, frac_digits=frac_digits)
-    week, secs, nanos = dtime.gps_weeks_secs_nanos(roundofs=0)
-    second = secs + nanos / 1.0E9
+    week, sec, nano = dtime.gps_week_sec_nano(roundofs=0)
+    second = sec + nano / 1.0E9
     return 'GPS week/sec = %d/%.3f (%s)' % (week, second, dtime_str)
 
   @staticmethod
@@ -186,10 +188,10 @@ class Formatter(Debuggable):
     strip = 6 - frac_digits if frac_digits else 7
     rnd = 10 ** (9 - frac_digits) // 2
     try:
-      week, secs, nanos = dtime.gps_weeks_secs_nanos(roundofs=rnd)
+      week, sec, nano = dtime.gps_week_sec_nano(roundofs=rnd)
     except AttributeError:
       return None
-    return ('%d/%d.%06d' % (week, secs, nanos // 1000))[:-strip]
+    return ('%d/%d.%06d' % (week, sec, nano // 1000))[:-strip]
 
   @staticmethod
   def EncodeAlt(value, units='M'):

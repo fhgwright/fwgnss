@@ -137,7 +137,7 @@ del _pre_leap_offsets, _post_leap_offsets, _pre_leap_reverse, _post_leap_reverse
 # pylint: enable=invalid-name
 
 
-def _DayNum(year, month, day):
+def DayNum(year, month, day):
   """Compute day number from date, where 0 = 01-Jan-0000."""
   if month < 1 or month > NUM_MONTHS:
     raise ValueError('Bad month number')
@@ -161,14 +161,14 @@ def _DayNum(year, month, day):
 # pylint: disable=invalid-name
 
 _rev_leap = leapseconds.TABLE[::-1] + [(1970, 1, 1, 0)]
-_leap_list = [(_DayNum(*x[:3]), x[3]) for x in _rev_leap]
+_leap_list = [(DayNum(*x[:3]), x[3]) for x in _rev_leap]
 _LEAP_TABLE = tuple(zip(*_leap_list))
 del _rev_leap, _leap_list
 
 # pylint: enable=invalid-name
 
 
-def _LeapInfo(daynum):
+def LeapInfo(daynum):
   """Return total leap seconds at start of day, and total seconds in day."""
   nextday = daynum + 1
   index = 0
@@ -185,32 +185,29 @@ def _LeapInfo(daynum):
     leap_change = num_leaps - _LEAP_TABLE[1][index + 1]
   return num_leaps - leap_change, SECONDS_PER_DAY + leap_change
 
-_GREGORIAN_SKIP_START = _DayNum(1582, MonthNum('Oct'), 4)
-_GREGORIAN_SKIP_END = _DayNum(1582, MonthNum('Oct'), 15)
-_TAI_BASE = _DayNum(1958, MonthNum('Jan'), 1)
-_MJD_BASE = _DayNum(1858, MonthNum('Nov'), 17)
-_UNIX_BASE = _DayNum(1970, MonthNum('Jan'), 1)
-
-_GPS_BASE = _DayNum(1980, MonthNum('Jan'), 6)
-GPS_LEAP_OFFSET = _LeapInfo(_GPS_BASE)[0]
+_GREGORIAN_SKIP_START = DayNum(1582, MonthNum('Oct'), 4)
+_GREGORIAN_SKIP_END = DayNum(1582, MonthNum('Oct'), 15)
+_TAI_BASE = DayNum(1958, MonthNum('Jan'), 1)
+_MJD_BASE = DayNum(1858, MonthNum('Nov'), 17)
+_UNIX_BASE = DayNum(1970, MonthNum('Jan'), 1)
 
 FMT_ISO8601 = '%Y-%m-%dT%H:%M:%S'
 
 
 def DayNumMJD(year, month, day):
   """Get day number relative to MJD base."""
-  return _DayNum(year, month, day) - _MJD_BASE
+  return DayNum(year, month, day) - _MJD_BASE
 
 
 def DayNumUnix(year, month, day):
   """Get day number relative to Unix base."""
-  return _DayNum(year, month, day) - _UNIX_BASE
+  return DayNum(year, month, day) - _UNIX_BASE
 
 
-_CYCLE_BASE = _DayNum(0, _LEAP_MONTH + 1, 1)
+_CYCLE_BASE = DayNum(0, _LEAP_MONTH + 1, 1)
 
 def _DayCount(num_years):
-  return _DayNum(num_years, _LEAP_MONTH + 1, 1) - _CYCLE_BASE
+  return DayNum(num_years, _LEAP_MONTH + 1, 1) - _CYCLE_BASE
 
 
 _QUADYEAR_DAYS = _DayCount(4)
@@ -218,10 +215,11 @@ _CENTURY_DAYS = _DayCount(100)
 _QUADRICENTURY_DAYS = _DayCount(400)
 _QUADRIMILLENIUM_DAYS = _DayCount(4000)
 
-_QUADRIMILLENIUM_BASE = _DayNum(4000, 1, 1)
+_QUADRIMILLENIUM_BASE = DayNum(4000, 1, 1)
 
 
-def _DayNumToYMD(daynum):
+def DayNumToYMD(daynum):
+  """Convert day number to year/month/day."""
   if daynum < _GREGORIAN_SKIP_END:
     raise ValueError('Date too early')
   qmill, qmilld = divmod(daynum - _CYCLE_BASE, _QUADRIMILLENIUM_DAYS)
@@ -243,6 +241,7 @@ _WEEKDAY_BASE = (WeekdayNum('Wed') - _MJD_BASE) % NUM_WEEKDAYS
 
 
 def _DayNumToWeekdayNum(daynum):
+  """Convert day number to day-of-week number."""
   return (daynum + _WEEKDAY_BASE) % NUM_WEEKDAYS
 
 
@@ -254,7 +253,8 @@ def _SecondsNanos(hour, minute, second, nanosecond=0):
   return ((hour * 60) + minute) * 60 + second, nanosecond
 
 
-def _SecondsToHMS(seconds, leapok=True):
+def SecondsToHMS(seconds, leapok=True):
+  """Convert second of day to hour/minute/second."""
   leaps = (leapok and seconds >= SECONDS_PER_DAY
            and seconds - SECONDS_PER_DAY + 1) or 0
   minutes, second = divmod(seconds - leaps, 60)
@@ -262,12 +262,13 @@ def _SecondsToHMS(seconds, leapok=True):
   return hour, minute, second + leaps
 
 
-def _TAIDaySecsToUTCDaySecs(day, second):
-  leap_seconds, num_seconds = _LeapInfo(day)
+def TAIDaySecsToUTCDaySecs(day, second):
+  """Convert TAI day/second to UTC day/second."""
+  leap_seconds, num_seconds = LeapInfo(day)
   while second < leap_seconds:
     day -= 1
     second += num_seconds
-    leap_seconds, num_seconds = _LeapInfo(day)
+    leap_seconds, num_seconds = LeapInfo(day)
   return day, second - leap_seconds
 
 
@@ -280,10 +281,10 @@ def LocalStrftime(fmt, struct, microstr):
 class date(object):  # pylint: disable=invalid-name
   """Date-only object, with ordinal and leap-second info."""
   def __new__(cls, year, month=1, day=1):
-    days = _DayNum(year, month, day)
+    days = DayNum(year, month, day)
     if days < _GREGORIAN_SKIP_END:
       raise ValueError('Date too early')
-    leap_seconds, num_seconds = _LeapInfo(days)
+    leap_seconds, num_seconds = LeapInfo(days)
     self = object.__new__(cls)
     # pylint: disable=protected-access
     self._days = days
@@ -295,19 +296,19 @@ class date(object):  # pylint: disable=invalid-name
   @classmethod
   def from_daynum(cls, daynum):  # pylint: disable=invalid-name
     """Create new date object from absolute day number."""
-    year, month, day = _DayNumToYMD(daynum)
+    year, month, day = DayNumToYMD(daynum)
     return cls(year, month, day)
 
   @classmethod
   def from_mjdday(cls, mjdday):  # pylint: disable=invalid-name
     """Create new date object from MJD day number."""
-    year, month, day = _DayNumToYMD(mjdday + _MJD_BASE)
+    year, month, day = DayNumToYMD(mjdday + _MJD_BASE)
     return cls(year, month, day)
 
   def __cmp__(self, other):
     """Compare this date object to another."""
     if not isinstance(other, date):
-      raise AttributeError('Both objects must be datetime')
+      raise AttributeError('Both objects must be date')
     # pylint: disable=protected-access
     return cmp(self._days, other._days)
 
@@ -315,7 +316,7 @@ class date(object):  # pylint: disable=invalid-name
     """Get datetime string in specified format from date object."""
     _ = roundofs
     if not self._struct:
-      yday = self._days - _DayNum(self.year, 1, 1) + 1
+      yday = self._days - DayNum(self.year, 1, 1) + 1
       wday = _DayNumToWeekdayNum(self._days)
       self._struct = (self.year, self.month, self.day, 0, 0, 0, wday, yday, 0)
     return LocalStrftime(fmt, self._struct, '000000')
@@ -342,7 +343,7 @@ class time(object):  # pylint: disable=invalid-name,too-many-instance-attributes
   def from_secs_nanos(cls,  # pylint: disable=invalid-name
                       seconds, nanosecond=0):
     """Create new time object from seconds and nanoseconds."""
-    hour, minute, second = _SecondsToHMS(seconds)
+    hour, minute, second = SecondsToHMS(seconds)
     return cls(hour, minute, second, nanosecond)
 
   def strftime(self,  # pylint: disable=invalid-name
@@ -355,8 +356,8 @@ class time(object):  # pylint: disable=invalid-name,too-many-instance-attributes
       if fixed_leap is not None:
         raise ValueError('No fixed_leap on time-only object')
       if secofs:
-        hour, minute, second = _SecondsToHMS(self.seconds + secofs,
-                                             leapok=False)
+        hour, minute, second = SecondsToHMS(self.seconds + secofs,
+                                            leapok=False)
         struct0 = (0, 0, 0, hour % 24, minute, second, 0, 0, 0)
       else:
         struct0 = (0, 0, 0, self.hour, self.minute, self.second, 0, 0, 0)
@@ -371,10 +372,10 @@ class datetime(  # pylint: disable=invalid-name,too-many-instance-attributes
   """Date/time object."""
   def __new__(cls,  # pylint: disable=too-many-arguments
               year, month=1, day=1, hour=0, minute=0, second=0, nanosecond=0):
-    days = _DayNum(year, month, day)
+    days = DayNum(year, month, day)
     if days < _GREGORIAN_SKIP_END:
       raise ValueError('Date too early')
-    leap_seconds, num_seconds = _LeapInfo(days)
+    leap_seconds, num_seconds = LeapInfo(days)
     seconds, nanos = _SecondsNanos(hour, minute, second, nanosecond)
     if seconds >= num_seconds:
       raise ValueError('Invalid leap second')
@@ -390,15 +391,15 @@ class datetime(  # pylint: disable=invalid-name,too-many-instance-attributes
   @classmethod
   def from_daynum_secs_nanos(cls, daynum, seconds, nanosecond=0):
     """Create new datetime object from absolute day number, secs, and nanos."""
-    year, month, day = _DayNumToYMD(daynum)
-    hour, minute, second = _SecondsToHMS(seconds)
+    year, month, day = DayNumToYMD(daynum)
+    hour, minute, second = SecondsToHMS(seconds)
     return cls(year, month, day, hour, minute, second, nanosecond)
 
   @classmethod
   def from_mjdday_secs_nanos(cls, mjdday, seconds, nanosecond=0):
     """Create new datetime object from MJD day number, seconds, and nanos."""
-    year, month, day = _DayNumToYMD(mjdday + _MJD_BASE)
-    hour, minute, second = _SecondsToHMS(seconds)
+    year, month, day = DayNumToYMD(mjdday + _MJD_BASE)
+    hour, minute, second = SecondsToHMS(seconds)
     return cls(year, month, day, hour, minute, second, nanosecond)
 
   @classmethod
@@ -408,8 +409,8 @@ class datetime(  # pylint: disable=invalid-name,too-many-instance-attributes
     seconds = (mjd - mjdday) * SECONDS_PER_DAY
     secint = int(seconds)
     nanosecond = int((seconds - secint) * 1.0E9)
-    year, month, day = _DayNumToYMD(mjdday + _MJD_BASE)
-    hour, minute, second = _SecondsToHMS(secint, leapok=False)
+    year, month, day = DayNumToYMD(mjdday + _MJD_BASE)
+    hour, minute, second = SecondsToHMS(secint, leapok=False)
     return cls(year, month, day, hour, minute, second, nanosecond)
 
   @classmethod
@@ -436,23 +437,9 @@ class datetime(  # pylint: disable=invalid-name,too-many-instance-attributes
       raise ValueError('Invalid day number')
     if second >= SECONDS_PER_DAY:
       raise ValueError('Bad second number')
-    days, seconds = _TAIDaySecsToUTCDaySecs(daynum + _TAI_BASE, second)
-    year, month, day = _DayNumToYMD(days)
-    hour, minute, second = _SecondsToHMS(seconds)
-    return cls(year, month, day, hour, minute, second, nanosecond)
-
-  @classmethod
-  def from_gps_week_secs(cls, week, second=0, nanosecond=0):
-    """Create new datetime object from GPS week, second and nanosecond."""
-    if week < 0:
-      raise ValueError('Invalid week number')
-    if second >= SECONDS_PER_WEEK:
-      raise ValueError('Bad second number')
-    weekday, daysec = divmod(second + GPS_LEAP_OFFSET, SECONDS_PER_DAY)
-    daynum = week * NUM_WEEKDAYS + weekday
-    days, seconds = _TAIDaySecsToUTCDaySecs(daynum + _GPS_BASE, daysec)
-    year, month, day = _DayNumToYMD(days)
-    hour, minute, second = _SecondsToHMS(seconds)
+    days, seconds = TAIDaySecsToUTCDaySecs(daynum + _TAI_BASE, second)
+    year, month, day = DayNumToYMD(days)
+    hour, minute, second = SecondsToHMS(seconds)
     return cls(year, month, day, hour, minute, second, nanosecond)
 
   def __cmp__(self, other):
@@ -477,7 +464,7 @@ class datetime(  # pylint: disable=invalid-name,too-many-instance-attributes
         dayofs, secs = divmod(secs + secofs, SECONDS_PER_DAY)
         strloc = datetime.from_tai_day_secs(days + dayofs, secs, nanos)
       # pylint: disable=protected-access
-      yday = strloc._days - _DayNum(strloc.year, 1, 1) + 1
+      yday = strloc._days - DayNum(strloc.year, 1, 1) + 1
       wday = _DayNumToWeekdayNum(strloc._days)
       struct = ((strloc.year, strloc.month, strloc.day,
                  strloc.hour, strloc.minute, strloc.second, wday, yday, 0),
@@ -493,20 +480,6 @@ class datetime(  # pylint: disable=invalid-name,too-many-instance-attributes
     seconds = self.seconds + self.leapseconds
     day_offset, seconds = divmod(seconds, SECONDS_PER_DAY)
     return days + day_offset, seconds
-
-  def gps_weeks_secs_nanos(self, roundofs=0):
-    """Get GPS weeks, seconds, and nanoseconds from datetime object."""
-    days = self._days - _GPS_BASE
-    if days < 0:
-      raise ValueError('Date precedes GPS origin')
-    nanos = self.nanosecond + roundofs
-    seconds = self.seconds + self.leapseconds - GPS_LEAP_OFFSET
-    if nanos >= 1000000000:
-      nanos -= 1000000000
-      seconds += 1
-    day_offset, seconds = divmod(seconds, SECONDS_PER_DAY)
-    week, dow = divmod(days + day_offset, NUM_WEEKDAYS)
-    return week, dow * SECONDS_PER_DAY + seconds, nanos
 
   def diff_secs(self, other):
     """Get difference in seconds between two datetime objects."""

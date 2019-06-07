@@ -55,7 +55,9 @@ class Debuggable(object):  # pylint: disable=too-few-public-methods
       if name in exclude:
         continue
       if not name.startswith('__') and name == name.upper():
-        result[name] = getattr(cls, name)
+        attr = getattr(cls, name)
+        if not getattr(attr, '__call__', None):  # Exclude methods
+          result[name] = attr
     return result
 
   def IV(self):  # pylint: disable=invalid-name
@@ -71,5 +73,7 @@ class Debuggable(object):  # pylint: disable=too-few-public-methods
       if name in exclude:
         continue
       if not name.startswith('__') and name == name.lower():
-        result[name] = getattr(self, name)
+        attr = getattr(self, name)
+        if not getattr(attr, '__call__', None):  # Exclude methods
+          result[name] = attr
     return result

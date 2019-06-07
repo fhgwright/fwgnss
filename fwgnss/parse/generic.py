@@ -28,7 +28,7 @@ from ..debuggable import Debuggable
 from ..systems import generic
 from ..systems import glonass
 from ..systems import gps
-from ..datetime import xdatetime
+from ..systems import xdatetime
 
 
 class Constants(Debuggable):  # pylint:disable=too-few-public-methods
@@ -36,7 +36,7 @@ class Constants(Debuggable):  # pylint:disable=too-few-public-methods
 
   SECONDS_PER_DAY = generic.Constants.SECONDS_PER_DAY
   SECONDS_PER_WEEK = generic.Constants.SECONDS_PER_WEEK
-  GPS_LEAPS = xdatetime.GPS_LEAP_OFFSET
+  GPS_LEAPS = xdatetime.Constants.GPS_LEAP_OFFSET
 
   # System ID codes (NMEA and internal)
   SYSTEM_ID_GPS = 1
@@ -432,9 +432,9 @@ class Decoder(Debuggable):
     """Convert GPS week/second to datetime object, and optionally store."""
     tow = sec_of_week
     second = int(tow)
-    nanosecond = int((tow - second) * 1E9)
+    nano = int((tow - second) * 1E9)
     return self._ReturnDateTime(
-        xdatetime.datetime.from_gps_week_secs(week, second, nanosecond), store)
+        xdatetime.datetime.from_gps_week_sec(week, second, nano), store)
 
   def DatetimeFromTime(self, time):
     """Get timestamp as datetime object."""

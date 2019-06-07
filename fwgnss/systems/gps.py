@@ -35,3 +35,5 @@ class Constants(generic.Constants):  # pylint: disable=too-few-public-methods
 
   L5_FREQUENCY = BASE_FREQUENCY * 115
   L5_WAVELENGTH = generic.Constants.LIGHT_SPEED / L5_FREQUENCY
+
+  EPOCH = (1980, 1, 6)  # Origin of GPS timescale
