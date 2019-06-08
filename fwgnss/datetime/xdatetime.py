@@ -308,7 +308,8 @@ class date(object):  # pylint: disable=invalid-name
   def __cmp__(self, other):
     """Compare this date object to another."""
     if not isinstance(other, date):
-      raise AttributeError('Both objects must be date')
+      types = (type(other), date)
+      raise TypeError('Type mismatch: %s not instance of %s' % types)
     # pylint: disable=protected-access
     return cmp(self._days, other._days)
 
@@ -445,7 +446,8 @@ class datetime(  # pylint: disable=invalid-name,too-many-instance-attributes
   def __cmp__(self, other):
     """Compare this datetime object to another."""
     if not isinstance(other, datetime):
-      raise AttributeError('Both objects must be datetime')
+      types = (type(other), datetime)
+      raise TypeError('Type mismatch: %s not instance of %s' % types)
     # pylint: disable=protected-access
     return (cmp(self._days, other._days) or cmp(self.seconds, other.seconds)
             or cmp(self.nanosecond, other.nanosecond))
@@ -484,7 +486,8 @@ class datetime(  # pylint: disable=invalid-name,too-many-instance-attributes
   def diff_secs(self, other):
     """Get difference in seconds between two datetime objects."""
     if not isinstance(other, datetime):
-      raise AttributeError('Both objects must be datetime')
+      types = (type(other), datetime)
+      raise TypeError('Type mismatch: %s not instance of %s' % types)
     # pylint: disable=protected-access
     diff = (self.nanosecond - other.nanosecond) / 1.0E9
     diff += self.seconds - other.seconds + self.leapseconds - other.leapseconds
