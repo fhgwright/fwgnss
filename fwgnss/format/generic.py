@@ -26,7 +26,7 @@ from ..systems import xdatetime
 
 
 class Error(Exception):
-  """Base class for all exceptions defined in this module."""
+  """Base class for all exceptions defined in formatter modules."""
 
 
 class ParseError(Error):

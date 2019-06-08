@@ -31,6 +31,10 @@ from ..systems import gps
 from ..systems import xdatetime
 
 
+class Error(Exception):
+  """Base class for all exceptions defined in parser modules."""
+
+
 class Constants(Debuggable):  # pylint:disable=too-few-public-methods
   """Class which holds various constant definitions."""
 
@@ -234,7 +238,8 @@ class Extracter(Debuggable):  # pylint: disable=too-many-instance-attributes
   def MergeExtracters(self, other):
     """Merge list of extracters from other extracter into this one."""
     if not isinstance(other, Extracter):
-      raise ValueError
+      types = (type(other), Extracter)
+      raise TypeError('Type mismatch: %s not instance of %s' % types)
     for cls, prio in other.extractables:
       self.AddExtracter(cls, prio)
     self.BindExtracters()

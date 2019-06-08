@@ -67,7 +67,7 @@ class Message(binary.BinaryDataItem):
   def Contents(self):
     """Get full message content."""
     if len(self.data) != self.length:
-      raise ValueError
+      raise binary.LengthError('%d != %d' % (len(self.data), self.length))
     checksum = self.Checksum(self.data)
     header = self.HEADER.pack(self.SYNC, self.msgtype, self.subtype,
                               self.length)
@@ -77,7 +77,7 @@ class Message(binary.BinaryDataItem):
   def Summary(self, full=False):
     """Get message summary text."""
     if len(self.data) != self.length:
-      raise ValueError
+      raise binary.LengthError('%d != %d' % (len(self.data), self.length))
     parser = full and self.parser
     if parser:
       return self.SUMMARY_DESC_PAT % (self.msgtype, self.length,
@@ -87,7 +87,7 @@ class Message(binary.BinaryDataItem):
   def LogText(self):
     """Get message text for logging."""
     if len(self.data) != self.length:
-      raise ValueError
+      raise binary.LengthError('%d != %d' % (len(self.data), self.length))
     return self.LOG_PAT % (self.msgtype, self.length)
 
 

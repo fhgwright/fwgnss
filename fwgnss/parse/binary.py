@@ -30,11 +30,11 @@ ENDIAN_PREFIXES = {'little': ['<'], 'big': ['>']}
 StructError = struct.error  # pylint: disable=invalid-name
 
 
-class Error(Exception):
-  """Base class for all exceptions defined in this module."""
+class LengthError(generic.Error):
+  """Length attribute mismatches actual length."""
 
 
-class BadLengthLimit(Error):
+class BadLengthLimit(generic.Error):
   """Unreasonable length limit for extracter."""
 
 

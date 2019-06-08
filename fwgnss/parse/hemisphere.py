@@ -288,7 +288,7 @@ class Message(binary.BinaryDataItem):
   def Contents(self):
     """Get full message content."""
     if len(self.data) != self.length:
-      raise ValueError
+      raise binary.LengthError('%d != %d' % (len(self.data), self.length))
     checksum = self.Checksum(self.data)
     header = self.HEADER.pack(self.SYNC, self.msgtype, self.length)
     trailer = self.TRAILER.pack(checksum, self.END)
@@ -297,7 +297,7 @@ class Message(binary.BinaryDataItem):
   def Summary(self, full=False):
     """Get message summary text."""
     if len(self.data) != self.length:
-      raise ValueError
+      raise binary.LengthError('%d != %d' % (len(self.data), self.length))
     parser = full and self.parser
     if parser:
       return self.SUMMARY_DESC_PAT % (self.msgtype, self.length,
@@ -307,7 +307,7 @@ class Message(binary.BinaryDataItem):
   def LogText(self):
     """Get message text for logging."""
     if len(self.data) != self.length:
-      raise ValueError
+      raise binary.LengthError('%d != %d' % (len(self.data), self.length))
     return self.LOG_PAT % (self.msgtype, self.length)
 
 
@@ -575,8 +575,8 @@ class BinaryParser(binary.Parser):
 
   MAX_LENGTH = max([x.PARSER[1].size for x in MESSAGE_DICT.values()])
   if Message.LENGTH_LIMIT < MAX_LENGTH:
-    raise binary.BadLengthLimit('Limit %d < %d'
-                                % (Message.LENGTH_LIMIT, MAX_LENGTH))
+    lengths = (Message.LENGTH_LIMIT, MAX_LENGTH)
+    raise binary.BadLengthLimit('Limit %d < %d' % lengths)
 
 Message.PARSE_CLASS = BinaryParser
 
