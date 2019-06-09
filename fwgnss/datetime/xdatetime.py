@@ -37,13 +37,6 @@ import time as _time
 
 from . import leapseconds
 
-try:
-  cmp
-except NameError:
-  def cmp(a, b):  # pylint: disable=redefined-builtin,invalid-name
-    """Reinstate cmp from Python 2."""
-    return (a > b) - (a < b)
-
 _DAYS_IN_MONTH = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
 NUM_MONTHS = 12
 _LEAP_MONTH = 2
@@ -278,14 +271,52 @@ def LocalStrftime(fmt, struct, microstr):
   return _time.strftime(fmt, struct)
 
 
-class date(object):  # pylint: disable=invalid-name
+class Cmpable(object):
+  """Base class to support comparisons as in Python 2."""
+  try:
+    _cmp = cmp
+  except NameError:
+    @staticmethod
+    def _cmp(a, b):  # pylint: disable=invalid-name
+      """Reinstate cmp from Python 2."""
+      return (a > b) - (a < b)
+
+    # Python 3 ignores __cmp__(), so we define the individual methods
+
+    def __cmp__(self, other):
+      """Dummy definition for pylint, overridden in subclasses."""
+      _, _ = self, other
+      return 0
+
+    def __lt__(self, other):
+      return self.__cmp__(other) < 0
+
+    def __gt__(self, other):
+      return self.__cmp__(other) > 0
+
+    def __eq__(self, other):
+      return self.__cmp__(other) == 0
+
+    def __le__(self, other):
+      return self.__cmp__(other) <= 0
+
+    def __ge__(self, other):
+      return self.__cmp__(other) >= 0
+
+    def __ne__(self, other):
+      return self.__cmp__(other) != 0
+
+
+class date(Cmpable):  # pylint: disable=invalid-name
   """Date-only object, with ordinal and leap-second info."""
   def __new__(cls, year, month=1, day=1):
     days = DayNum(year, month, day)
     if days < _GREGORIAN_SKIP_END:
       raise ValueError('Date too early')
     leap_seconds, num_seconds = LeapInfo(days)
-    self = object.__new__(cls)
+    # For some reason, using super() here confuses Python 3 pylint
+    # self = super(date, cls).__new__(cls)
+    self = Cmpable.__new__(cls)
     # pylint: disable=protected-access
     self._days = days
     self.year, self.month, self.day = year, month, day
@@ -311,7 +342,7 @@ class date(object):  # pylint: disable=invalid-name
       types = (type(other), date)
       raise TypeError('Type mismatch: %s not instance of %s' % types)
     # pylint: disable=protected-access
-    return cmp(self._days, other._days)
+    return self._cmp(self._days, other._days)
 
   def strftime(self, fmt, roundofs=0):  # pylint: disable=invalid-name
     """Get datetime string in specified format from date object."""
@@ -323,11 +354,13 @@ class date(object):  # pylint: disable=invalid-name
     return LocalStrftime(fmt, self._struct, '000000')
 
 
-class time(object):  # pylint: disable=invalid-name,too-many-instance-attributes
+class time(Cmpable):  # pylint: disable=invalid-name
   """Time-only object."""
   def __new__(cls, hour=0, minute=0, second=0, nanosecond=0):
     seconds, nanos = _SecondsNanos(hour, minute, second, nanosecond)
-    self = object.__new__(cls)
+    # For some reason, using super() here confuses Python 3 pylint
+    # self = super(time, cls).__new__(cls)
+    self = Cmpable.__new__(cls)
     # pylint: disable=protected-access
     self.seconds, self.nanosecond = seconds, nanos
     self.hour, self.minute, self.second = hour, minute, second
@@ -337,8 +370,8 @@ class time(object):  # pylint: disable=invalid-name,too-many-instance-attributes
 
   def __cmp__(self, other):
     """Compare this time object to another."""
-    return (cmp(self.seconds, other.seconds)
-            or cmp(self.nanosecond, other.nanosecond))
+    return (self._cmp(self.seconds, other.seconds)
+            or self._cmp(self.nanosecond, other.nanosecond))
 
   @classmethod
   def from_secs_nanos(cls,  # pylint: disable=invalid-name
@@ -368,7 +401,7 @@ class time(object):  # pylint: disable=invalid-name,too-many-instance-attributes
 
 
 class datetime(  # pylint: disable=invalid-name,too-many-instance-attributes
-    object
+    Cmpable
     ):
   """Date/time object."""
   def __new__(cls,  # pylint: disable=too-many-arguments
@@ -380,7 +413,9 @@ class datetime(  # pylint: disable=invalid-name,too-many-instance-attributes
     seconds, nanos = _SecondsNanos(hour, minute, second, nanosecond)
     if seconds >= num_seconds:
       raise ValueError('Invalid leap second')
-    self = object.__new__(cls)
+    # For some reason, using super() here confuses Python 3 pylint
+    # self = super(datetime, cls).__new__(cls)
+    self = Cmpable.__new__(cls)
     # pylint: disable=protected-access
     self._days, self.seconds, self.nanosecond = days, seconds, nanos
     self.leapseconds, self.num_seconds = leap_seconds, num_seconds
@@ -449,8 +484,9 @@ class datetime(  # pylint: disable=invalid-name,too-many-instance-attributes
       types = (type(other), datetime)
       raise TypeError('Type mismatch: %s not instance of %s' % types)
     # pylint: disable=protected-access
-    return (cmp(self._days, other._days) or cmp(self.seconds, other.seconds)
-            or cmp(self.nanosecond, other.nanosecond))
+    return (self._cmp(self._days, other._days)
+            or self._cmp(self.seconds, other.seconds)
+            or self._cmp(self.nanosecond, other.nanosecond))
 
   def strftime(self, fmt=FMT_ISO8601, roundofs=500, fixed_leap=None):
     """Get datetime string in specified format from datetime object."""
