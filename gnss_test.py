@@ -68,6 +68,9 @@ def main(argv):
   parser = Parser()
   decoder = Decoder()
   formatter = Formatter()
+  pdb_module = sys.modules.get('pdb')
+  if pdb_module:
+    pdb_module.set_trace()
   if parsed_args.input:
     fname = parsed_args.input.name
     for item in extracter.GetItems():
