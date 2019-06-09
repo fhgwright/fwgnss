@@ -30,8 +30,7 @@ class Debuggable(object):  # pylint: disable=too-few-public-methods
   # to reflect the class where they appear.  Since the IV/CV methods are
   # only intended for debugging, this processing is done within, rather
   # than at definition time.
-  _CV_EXCLUDE = ['IV', '_IV_INCLUDE', '_IV_EXCLUDE',
-                 'CV', '_CV_INCLUDE', '_CV_EXCLUDE']
+  _CV_EXCLUDE = ['_IV_INCLUDE', '_IV_EXCLUDE', '_CV_INCLUDE', '_CV_EXCLUDE']
 
   @classmethod
   def _Collect(cls, name):
