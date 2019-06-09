@@ -23,13 +23,13 @@ from __future__ import absolute_import, print_function, division
 import argparse
 import sys
 
-from fwgnss.parse import hemisphere as parse_hemisphere
-from fwgnss.format import hemisphere as format_hemisphere
+from fwgnss.parse import combined as parse_combined
+from fwgnss.format import combined as format_combined
 
-Extracter = parse_hemisphere.Extracter
-Parser = parse_hemisphere.Parser
-Decoder = parse_hemisphere.Decoder
-Formatter = format_hemisphere.Formatter
+Extracter = parse_combined.Extracter
+Parser = parse_combined.Parser
+Decoder = parse_combined.Decoder
+Formatter = format_combined.Formatter
 
 
 def ParseArgs(argv):
