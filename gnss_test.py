@@ -32,20 +32,6 @@ Decoder = parse_combined.Decoder
 Formatter = format_combined.Formatter
 
 
-def ParseArgs(argv):
-  """Parse arguments from command line.
-
-  Args:
-    argv: list of arguments
-
-  Returns:
-    parse result
-  """
-  parser = argparse.ArgumentParser(description='Process NMEA-0183 data')
-  parser.add_argument('-i', '--input', type=argparse.FileType(mode='rb'))
-  return parser.parse_args(argv)
-
-
 def GotItem(item, fname, parser, decoder, formatter):
   """Breakpoint spot for debugging."""
   parsed = parser.Parse(item)
@@ -61,9 +47,20 @@ def GotItem(item, fname, parser, decoder, formatter):
   return parsed, decoded
 
 
+class ArgParser(object):  # pylint: disable=too-few-public-methods
+  """Class for parsing command-line arguments."""
+  PARSER = argparse.ArgumentParser(description='Process NMEA-0183 data')
+  PARSER.add_argument('-i', '--input', type=argparse.FileType(mode='rb'))
+
+  @classmethod
+  def Parse(cls, argv):
+    """Parse arguments from supplied argv list."""
+    return cls.PARSER.parse_args(argv)
+
+
 def main(argv):
   """Main function."""
-  parsed_args = ParseArgs(argv[1:])
+  parsed_args = ArgParser.Parse(argv[1:])
   extracter = Extracter(parsed_args.input)
   parser = Parser()
   decoder = Decoder()

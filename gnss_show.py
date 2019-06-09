@@ -28,36 +28,6 @@ from fwgnss.format import combined
 # VENDOR_MODULES = [format_hemisphere]
 
 
-def ParseArgs(argv):
-  """Parse arguments from command line.
-
-  Args:
-    argv: list of arguments
-
-  Returns:
-    parse result
-  """
-  parser = argparse.ArgumentParser(
-      description='Decode NMEA-0183 data (with possible binary messages)'
-      )
-  parser.add_argument('-g', '--show-gps-time', action='store_true',
-                      help='show GPS time rather than UTC')
-  parser.add_argument('-i', '--input', type=argparse.FileType(mode='rb'),
-                      required=True)
-  parser.add_argument('-o', '--output', type=argparse.FileType(mode='w'))
-  parser.add_argument('-r', '--dump-raw-binary', action='store_true',
-                      help='include hex dump of binary data')
-  parser.add_argument('-s', '--stop-on-errors', action='store_true')
-  parser.add_argument('-S', '--stop-on-warnings', action='store_true')
-  parser.add_argument('-f', '--filter', help='item type filter list')
-  parser.add_argument('-q', '--hide-warnings', action='store_true',
-                      help='hide warnings from stderr')
-  parser.add_argument('-Q', '--exclude-warnings', action='store_true',
-                      help='exclude warnings from output')
-  parser.add_argument('--format-level', type=int, help='format-level value')
-  return parser.parse_args(argv)
-
-
 _ = '''
 def GetFormatClass(vendor_arg=''):
   """Get proper formatter for specified vendor."""
@@ -91,9 +61,36 @@ def GetFilterList(arg, parse_map):
   return result
 
 
+class ArgParser(object):  # pylint: disable=too-few-public-methods
+  """Class for parsing command-line arguments."""
+  PARSER = argparse.ArgumentParser(
+      description='Decode NMEA-0183 data (with possible binary messages)'
+      )
+  PARSER.add_argument('-g', '--show-gps-time', action='store_true',
+                      help='show GPS time rather than UTC')
+  PARSER.add_argument('-i', '--input', type=argparse.FileType(mode='rb'),
+                      required=True)
+  PARSER.add_argument('-o', '--output', type=argparse.FileType(mode='w'))
+  PARSER.add_argument('-r', '--dump-raw-binary', action='store_true',
+                      help='include hex dump of binary data')
+  PARSER.add_argument('-s', '--stop-on-errors', action='store_true')
+  PARSER.add_argument('-S', '--stop-on-warnings', action='store_true')
+  PARSER.add_argument('-f', '--filter', help='item type filter list')
+  PARSER.add_argument('-q', '--hide-warnings', action='store_true',
+                      help='hide warnings from stderr')
+  PARSER.add_argument('-Q', '--exclude-warnings', action='store_true',
+                      help='exclude warnings from output')
+  PARSER.add_argument('--format-level', type=int, help='format-level value')
+
+  @classmethod
+  def Parse(cls, argv):
+    """Parse arguments from supplied argv list."""
+    return cls.PARSER.parse_args(argv)
+
+
 def main(argv):
   """Main function."""
-  parsed_args = ParseArgs(argv[1:])
+  parsed_args = ArgParser.Parse(argv[1:])
 
   report_errors = not (parsed_args.output and parsed_args.output.isatty())
 

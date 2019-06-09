@@ -68,32 +68,6 @@ def CheckTimeList(tvalstr, tlist):
   return False
 
 
-def ParseArgs(argv):
-  """Parse arguments from command line.
-
-  Args:
-    argv: list of arguments
-
-  Returns:
-    parse result
-  """
-  parser = argparse.ArgumentParser(description='Process NMEA-0183 data')
-  parser.add_argument('-i', '--input', type=argparse.FileType(mode='rb'),
-                      required=True)
-  parser.add_argument('-p', '--pattern', type=str, default='')
-  parser.add_argument('-m', '--min-match', type=int, default=30)
-  parser.add_argument('-o', '--output', type=argparse.FileType(mode='w'))
-  parser.add_argument('-b', '--binary_out', type=argparse.FileType(mode='wb'))
-  parser.add_argument('-l', '--log_other', type=argparse.FileType(mode='w'))
-  parser.add_argument('-s', '--strip-crs', action='store_true')
-  parser.add_argument('--include-bin', type=CsvInts)
-  parser.add_argument('--exclude-bin', type=CsvInts)
-  parser.add_argument('--include-times', type=CsvTimes)
-  parser.add_argument('--exclude-times', type=CsvTimes)
-  parser.add_argument('--exclude-control', action='store_true')
-  return parser.parse_args(argv)
-
-
 def GetBundledNmeaData(extracter):
   """Get groups of NMEA data corresponding to one GPGGA sentence,
   with GxGSA content reported for filtering.
@@ -215,10 +189,33 @@ def DumpLogs(ofile, log_time, control_log, binary_log):
     binary_log[:] = []
 
 
+class ArgParser(object):  # pylint: disable=too-few-public-methods
+  """Class for parsing command-line arguments."""
+  PARSER = argparse.ArgumentParser(description='Process NMEA-0183 data')
+  PARSER.add_argument('-i', '--input', type=argparse.FileType(mode='rb'),
+                      required=True)
+  PARSER.add_argument('-p', '--pattern', type=str, default='')
+  PARSER.add_argument('-m', '--min-match', type=int, default=30)
+  PARSER.add_argument('-o', '--output', type=argparse.FileType(mode='w'))
+  PARSER.add_argument('-b', '--binary_out', type=argparse.FileType(mode='wb'))
+  PARSER.add_argument('-l', '--log_other', type=argparse.FileType(mode='w'))
+  PARSER.add_argument('-s', '--strip-crs', action='store_true')
+  PARSER.add_argument('--include-bin', type=CsvInts)
+  PARSER.add_argument('--exclude-bin', type=CsvInts)
+  PARSER.add_argument('--include-times', type=CsvTimes)
+  PARSER.add_argument('--exclude-times', type=CsvTimes)
+  PARSER.add_argument('--exclude-control', action='store_true')
+
+  @classmethod
+  def Parse(cls, argv):
+    """Parse arguments from supplied argv list."""
+    return cls.PARSER.parse_args(argv)
+
+
 # pylint: disable=too-many-branches,too-many-statements,too-many-locals
 def main(argv):
   """Main function."""
-  parsed_args = ParseArgs(argv[1:])
+  parsed_args = ArgParser.Parse(argv[1:])
   include_bin = parsed_args.include_bin and set(parsed_args.include_bin)
   exclude_bin = (set(parsed_args.exclude_bin) if parsed_args.exclude_bin
                  else set())
