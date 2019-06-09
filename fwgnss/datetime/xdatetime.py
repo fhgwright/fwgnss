@@ -273,6 +273,8 @@ def LocalStrftime(fmt, struct, microstr):
 
 class Cmpable(object):
   """Base class to support comparisons as in Python 2."""
+  __slots__ = ()
+
   try:
     _cmp = cmp
   except NameError:
@@ -309,6 +311,9 @@ class Cmpable(object):
 
 class date(Cmpable):  # pylint: disable=invalid-name
   """Date-only object, with ordinal and leap-second info."""
+  __slots__ = ('_days', 'year', 'month', 'day',
+               'leapseconds', 'num_seconds', '_struct')
+
   def __new__(cls, year, month=1, day=1):
     days = DayNum(year, month, day)
     if days < _GREGORIAN_SKIP_END:
@@ -356,6 +361,9 @@ class date(Cmpable):  # pylint: disable=invalid-name
 
 class time(Cmpable):  # pylint: disable=invalid-name
   """Time-only object."""
+  __slots__ = ('seconds', 'nanosecond', 'hour', 'minute', 'second',
+               '_struct_dict', '_struct')
+
   def __new__(cls, hour=0, minute=0, second=0, nanosecond=0):
     seconds, nanos = _SecondsNanos(hour, minute, second, nanosecond)
     # For some reason, using super() here confuses Python 3 pylint
@@ -404,6 +412,10 @@ class datetime(  # pylint: disable=invalid-name,too-many-instance-attributes
     Cmpable
     ):
   """Date/time object."""
+  __slots__ = ('_days', 'seconds', 'nanosecond', 'leapseconds', 'num_seconds',
+               'year', 'month', 'day', 'hour', 'minute', 'second',
+               '_struct_dict')
+
   def __new__(cls,  # pylint: disable=too-many-arguments
               year, month=1, day=1, hour=0, minute=0, second=0, nanosecond=0):
     days = DayNum(year, month, day)

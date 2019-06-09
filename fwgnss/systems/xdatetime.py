@@ -38,13 +38,19 @@ class Constants(Debuggable):  # pylint:disable=too-few-public-methods
 class date(xdatetime.date, Debuggable):  # pylint: disable=invalid-name
   """Date-only object, with ordinal and leap-second info."""
 
+  __slots__ = ()
+
 
 class time(xdatetime.time, Debuggable):  # pylint: disable=invalid-name
   """Time-only object."""
 
+  __slots__ = ()
+
 
 class datetime(xdatetime.datetime, Constants):  # pylint: disable=invalid-name
   """Date/time object."""
+
+  __slots__ = ()
 
   @classmethod
   def from_gps_week_sec(cls,  # pylint: disable=invalid-name
