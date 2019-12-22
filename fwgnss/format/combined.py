@@ -20,6 +20,7 @@
 from __future__ import absolute_import, print_function, division
 
 from ..parse import combined
+from . import garmin
 from . import hemisphere
 from . import nmea
 from . import sirf
@@ -31,6 +32,7 @@ class Formatter(  # pylint: disable=too-many-ancestors
     hemisphere.Formatter,
     sirf.Formatter,
     ublox.Formatter,
+    garmin.Formatter,
     ):
   """Combined Formatter class."""
   EXTRACTER = combined.Extracter

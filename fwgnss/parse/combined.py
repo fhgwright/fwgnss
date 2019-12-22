@@ -21,6 +21,7 @@ from __future__ import absolute_import, print_function, division
 
 from . import binary
 from . import generic
+from . import garmin
 from . import hemisphere
 from . import nmea
 from . import sirf
@@ -38,6 +39,7 @@ class Extracter(  # pylint: disable=too-many-ancestors
     hemisphere.Extracter,
     sirf.Extracter,
     ublox.Extracter,
+    garmin.Extracter,
     ):
   """Combined Extracter class."""
 
@@ -47,6 +49,7 @@ class Parser(  # pylint: disable=too-many-ancestors
     hemisphere.Parser,
     sirf.Parser,
     ublox.Parser,
+    garmin.Parser,
     ):
   """Combined Parser class."""
 
@@ -56,5 +59,6 @@ class Decoder(  # pylint: disable=too-many-ancestors
     hemisphere.Decoder,
     sirf.Decoder,
     ublox.Decoder,
+    garmin.Decoder,
     ):
   """Combined Decoder class."""
