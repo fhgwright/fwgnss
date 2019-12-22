@@ -269,10 +269,9 @@ class Message(binary.BinaryDataItem):
           return None, 0
         continue
       break
-    if needed < 0:  # If too much data (improperly terminated)
-      return None, 0
-    body = bytearray(extracter.line[cls.HDR_SIZE:-cls.TRL_SIZE])
-    checksum, end = cls.TRAILER.unpack(extracter.line[-cls.TRL_SIZE:])
+    endpos = cls.HDR_SIZE + length
+    body = bytearray(extracter.line[cls.HDR_SIZE:endpos])
+    checksum, end = cls.TRAILER.unpack(extracter.line[endpos:endpos+cls.TRL_SIZE])
     actual_checksum = cls.Checksum(body)
     if actual_checksum != checksum or end != cls.END:
       return None, 0
