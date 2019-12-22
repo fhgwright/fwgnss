@@ -52,23 +52,92 @@ class Message(binary.BinaryDataItem):
   ENDIANNESS = 'little'  # Specified somewhat obscurely in section 7.1
   ENDIAN_PREFIX = binary.ENDIAN_PREFIXES[ENDIANNESS]
 
+  # Minumum header/trailer w/o DLE stuffing
+  HEADER = binary.MakeStruct(ENDIAN_PREFIX, ['B B B'])  # w/o DLE stuffing
+  TRAILER = binary.MakeStruct(ENDIAN_PREFIX, ['B B B'])  # w/o DLE stuffing
+  HDR_SIZE = HEADER.size
+  TRL_SIZE = TRAILER.size
+  DLE = 16
+  ETX = 3
+  DLE_BYTE = bytes(bytearray([DLE]))
+
+  LOG_PAT = 'Garmin-%02d(%d)'
+  SUMMARY_PAT = LOG_PAT
+  SUMMARY_DESC_PAT = SUMMARY_PAT + ': %s'
+
   __slots__ = ()
 
   # Avoid pylint complaints for items we'll add later
   # pylint: disable=no-member
 
   @classmethod
-  def Extract(cls, extracter):  # pylint: disable=too-many-return-statements
+  def Extract(cls, extracter):
+    # pylint: disable=too-many-return-statements, too-many-branches
     """Extract a Garmin binary item from the input stream."""
-    # Not implemented yet.
-    _ = extracter
-    return None, 0
+    if not extracter.line.startswith(cls.DLE_BYTE):
+      return None, 0
+    # Binary message may have embedded apparent EOLs
+
+    # Make sure we have enough for header, with possible DLE stuffing
+    while len(extracter.line) < cls.HDR_SIZE + 1:
+      if not extracter.GetLine():
+        return None, 0
+      continue
+
+    # Get the header items
+    _, msgtype, length = cls.HEADER.unpack(extracter.line[:cls.HDR_SIZE])
+    hdrlen = cls.HDR_SIZE + 1 if length == cls.DLE else cls.HDR_SIZE
+    tlength = hdrlen + length + cls.TRL_SIZE  # Tentative total length
+
+    # Now collect the body without extra DLEs
+    pos = hdrlen
+    body = bytearray()
+    bline = bytearray(extracter.line)
+    while len(body) < length:
+      if len(bline) < tlength:
+        if not extracter.GetLine():
+          return None, 0
+        bline = bytearray(extracter.line)
+        continue
+      char = bline[pos]
+      pos += 1
+      body.append(char)
+      if char == cls.DLE:
+        char = bline[pos]
+        pos += 1
+        tlength += 1
+        if char != cls.DLE:
+          return None, 0
+
+    # We have the body, now get the trailer, with possible stuffing
+    char = bline[pos]
+    if char == cls.DLE:
+      pos += 1
+      tlength += 1
+      char = bline[pos]
+      if char != cls.DLE:
+        return None, 0
+      if len(bline) < tlength and not extracter.GetLine():
+        return None, 0
+    checksum, dle, etx = cls.TRAILER.unpack(
+        extracter.line[pos:pos+cls.TRL_SIZE]
+        )
+    actual_checksum = cls.Checksum(body, msgtype, length)
+    if actual_checksum != checksum or dle != cls.DLE or etx != cls.ETX:
+      return None, 0
+    return cls.Make(data=body, length=length, msgtype=msgtype), tlength
+
+  @staticmethod
+  def Checksum(data, msgtype, length):
+    """Compute checksum of data."""
+    # The Garmin checksum is just the two's complement of the sum, in 8 bits.
+    return (-(sum(data) + msgtype + length)) & 0xFF
 
   def Contents(self):
     """Get full message content."""
     if len(self.data) != self.length:
       raise binary.LengthError('%d != %d' % (len(self.data), self.length))
-    checksum = self.Checksum(self.data)
+    checksum = self.Checksum(self.data, self.msgtype, self.length)
     header = self.HEADER.pack(self.SYNC, self.msgtype, self.subtype,
                               self.length)
     trailer = self.TRAILER.pack(*checksum)
