@@ -85,7 +85,7 @@ class Message(binary.BinaryDataItem):
       continue
 
     # Get the header items
-    _, msgtype, length = cls.HEADER.unpack(extracter.line[:cls.HDR_SIZE])
+    _, msgtype, length = cls.HEADER.unpack_from(extracter.line)
     hdrlen = cls.HDR_SIZE + 1 if length == cls.DLE else cls.HDR_SIZE
     tlength = hdrlen + length + cls.TRL_SIZE  # Tentative total length
 
@@ -119,9 +119,7 @@ class Message(binary.BinaryDataItem):
         return None, 0
       if len(bline) < tlength and not extracter.GetLine():
         return None, 0
-    checksum, dle, etx = cls.TRAILER.unpack(
-        extracter.line[pos:pos+cls.TRL_SIZE]
-        )
+    checksum, dle, etx = cls.TRAILER.unpack_from(extracter.line, pos)
     actual_checksum = cls.Checksum(body, msgtype, length)
     if actual_checksum != checksum or dle != cls.DLE or etx != cls.ETX:
       return None, 0

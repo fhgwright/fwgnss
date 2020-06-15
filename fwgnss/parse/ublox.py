@@ -75,9 +75,7 @@ class Message(binary.BinaryDataItem):
     # Binary message may have embedded apparent EOLs
     while True:
       try:
-        _, msgtype, subtype, length = (
-            cls.HEADER.unpack(extracter.line[:cls.HDR_SIZE])
-            )
+        _, msgtype, subtype, length = (cls.HEADER.unpack_from(extracter.line))
       # Just in case header contains apparent EOL
       except binary.StructError:
         if not extracter.GetLine():
@@ -95,7 +93,7 @@ class Message(binary.BinaryDataItem):
     tlength = hlength + cls.TRL_SIZE
     cbody = bytearray(extracter.line[cls.CKS_START:hlength])
     body = cbody[cls.HDR_REST:]
-    checksum = cls.TRAILER.unpack(extracter.line[hlength:tlength])
+    checksum = cls.TRAILER.unpack_from(extracter.line, hlength)
     actual_checksum = cls.Checksum(cbody)
     if actual_checksum != checksum:
       return None, 0
