@@ -38,7 +38,7 @@ class NmeaFormatter(nmea.NmeaFormatter):
   FORMATTER_DICT = {}
 
 
-class UbloxConstants(garmin.Constants):  # pylint: disable=too-few-public-methods
+class GarminConstants(garmin.Constants):  # pylint: disable=too-few-public-methods
   """Class for various Garmin-related constant definitions."""
 
 

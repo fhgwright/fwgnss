@@ -38,7 +38,7 @@ class NmeaFormatter(nmea.NmeaFormatter):
   FORMATTER_DICT = {}
 
 
-class UbloxConstants(skeleton.Constants):  # pylint: disable=too-few-public-methods
+class SkeletonConstants(skeleton.Constants):  # pylint: disable=too-few-public-methods
   """Class for various Skeleton-related constant definitions."""
 
 

@@ -38,7 +38,7 @@ class NmeaFormatter(nmea.NmeaFormatter):
   FORMATTER_DICT = {}
 
 
-class UbloxConstants(sirf.Constants):  # pylint: disable=too-few-public-methods
+class SirfConstants(sirf.Constants):  # pylint: disable=too-few-public-methods
   """Class for various SiRF-related constant definitions."""
 
 
