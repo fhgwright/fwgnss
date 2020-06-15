@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Test program for GNSS Extracter/Parser/Decoder/Formatter modules."""
 
-#                      Copyright (c) 2019
+#                      Copyright (c) 2020
 #                   Frederick H. G. Wright II
 #                          fw@fwright.net
 #
@@ -49,7 +49,9 @@ def GotItem(item, fname, parser, decoder, formatter):
 
 class ArgParser(object):  # pylint: disable=too-few-public-methods
   """Class for parsing command-line arguments."""
-  PARSER = argparse.ArgumentParser(description='Process NMEA-0183 data')
+  PARSER = argparse.ArgumentParser(
+      description='Test GNSS data handling (with pdb, etc.)'
+      )
   PARSER.add_argument('-i', '--input', type=argparse.FileType(mode='rb'))
 
   @classmethod

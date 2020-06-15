@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Program to split mixed NMEA/binary GNSS data into separate files."""
 
-#                      Copyright (c) 2019
+#                      Copyright (c) 2020
 #                   Frederick H. G. Wright II
 #                          fw@fwright.net
 #
@@ -191,7 +191,9 @@ def DumpLogs(ofile, log_time, control_log, binary_log):
 
 class ArgParser(object):  # pylint: disable=too-few-public-methods
   """Class for parsing command-line arguments."""
-  PARSER = argparse.ArgumentParser(description='Process NMEA-0183 data')
+  PARSER = argparse.ArgumentParser(
+      description='Split GNSS data, NMEA vs. binary'
+      )
   PARSER.add_argument('-i', '--input', type=argparse.FileType(mode='rb'),
                       required=True)
   PARSER.add_argument('-p', '--pattern', type=str, default='')

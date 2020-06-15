@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Program to decode and print GNSS data."""
 
-#                      Copyright (c) 2019
+#                      Copyright (c) 2020
 #                   Frederick H. G. Wright II
 #                          fw@fwright.net
 #
@@ -64,7 +64,7 @@ def GetFilterList(arg, parse_map):
 class ArgParser(object):  # pylint: disable=too-few-public-methods
   """Class for parsing command-line arguments."""
   PARSER = argparse.ArgumentParser(
-      description='Decode NMEA-0183 data (with possible binary messages)'
+      description='Decode GNSS data (both NMEA and binary)'
       )
   PARSER.add_argument('-g', '--show-gps-time', action='store_true',
                       help='show GPS time rather than UTC')
