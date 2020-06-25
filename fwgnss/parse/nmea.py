@@ -22,6 +22,7 @@ from __future__ import absolute_import, print_function, division
 import collections
 import operator
 import re
+import string
 
 try:
   reduce
@@ -54,6 +55,10 @@ class Sentence(generic.TextItem):
   LINE = PATTERN + EOL
   NO_CKS_PAT = PREFIX + '%s'
   NO_CKS_LINE = NO_CKS_PAT + EOL
+
+  PRINTABLE = string.printable
+  PRINTABLE_SET = set(PRINTABLE)
+  NO_PRINT = '.'
 
   __slots__ = ('has_checksum',)
 
@@ -111,22 +116,31 @@ class Sentence(generic.TextItem):
     """Compute NMEA checksum of data supplied as string."""
     return reduce(operator.xor, bytearray(data, encoding=cls.TEXT_ENCODING), 0)
 
+  def SafeText(self):
+    """Get item text, avoiding nonprintable characters."""
+    text = self.SEPARATOR.join(self.data)
+    if self.parse_error and set(text) - self.PRINTABLE_SET:
+      text = ''.join(
+          [x if x in self.PRINTABLE else self.NO_PRINT for x in text]
+          )
+    return text
+
   def Contents(self):
-    line = self.SEPARATOR.join(self.data)
+    line = self.SafeText()
     if self.has_checksum:
       checksum = self._ChecksumString(line)
       return self.LINE % (line, checksum)
     return self.NO_CKS_LINE % line
 
   def Summary(self, full=False):
-    line = self.SEPARATOR.join(self.data)
+    line = self.SafeText()
     if full and self.has_checksum:
       checksum = self._ChecksumString(line)
       return self.PATTERN % (line, checksum)
     return self.NO_CKS_PAT % line
 
   def LogText(self):
-    return self.SEPARATOR.join(self.data)
+    return self.SafeText()
 
 
 class NmeaExtracter(generic.Extracter):
