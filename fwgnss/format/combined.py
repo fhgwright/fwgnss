@@ -1,6 +1,6 @@
 """Combined module for formatting of all supported GNSS data formats."""
 
-#                      Copyright (c) 2019
+#                      Copyright (c) 2020
 #                   Frederick H. G. Wright II
 #                          fw@fwright.net
 #
@@ -23,6 +23,7 @@ from ..parse import combined
 from . import garmin
 from . import hemisphere
 from . import nmea
+from . import oncore
 from . import sirf
 from . import ublox
 
@@ -32,6 +33,7 @@ class Formatter(  # pylint: disable=too-many-ancestors
     hemisphere.Formatter,
     sirf.Formatter,
     ublox.Formatter,
+    oncore.Formatter,
     garmin.Formatter,
     ):
   """Combined Formatter class."""

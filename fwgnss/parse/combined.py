@@ -1,6 +1,6 @@
 """Combined GNSS parsing base, including all suported formats."""
 
-#                      Copyright (c) 2019
+#                      Copyright (c) 2020
 #                   Frederick H. G. Wright II
 #                          fw@fwright.net
 #
@@ -24,6 +24,7 @@ from . import generic
 from . import garmin
 from . import hemisphere
 from . import nmea
+from . import oncore
 from . import sirf
 from . import ublox
 
@@ -39,6 +40,7 @@ class Extracter(  # pylint: disable=too-many-ancestors
     hemisphere.Extracter,
     sirf.Extracter,
     ublox.Extracter,
+    oncore.Extracter,
     garmin.Extracter,
     ):
   """Combined Extracter class."""
@@ -49,6 +51,7 @@ class Parser(  # pylint: disable=too-many-ancestors
     hemisphere.Parser,
     sirf.Parser,
     ublox.Parser,
+    oncore.Parser,
     garmin.Parser,
     ):
   """Combined Parser class."""
@@ -59,6 +62,7 @@ class Decoder(  # pylint: disable=too-many-ancestors
     hemisphere.Decoder,
     sirf.Decoder,
     ublox.Decoder,
+    oncore.Decoder,
     garmin.Decoder,
     ):
   """Combined Decoder class."""
