@@ -170,7 +170,7 @@ class Comment(TextItem):
     data = extracter.GetText(extracter.line[:length])
     if data is None:
       return None, 0
-    for char in bytearray(data):
+    for char in bytearray(data, encoding=cls.TEXT_ENCODING):
       if char in cls.BAD_CHARS:
         return None, 0
     return cls.Make(data=data, length=length), length + endlen
