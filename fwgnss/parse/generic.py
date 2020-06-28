@@ -203,6 +203,7 @@ class Extracter(Debuggable):  # pylint: disable=too-many-instance-attributes
   def __init__(self, infile=None):
     self.input = infile
     self.line = b''
+    self.charpos = 0       # For debugging
     self.linenum = 0       # For debugging
     self.linebreak = 0     # To stop on line for debugging
     self.skipped = b''     # Unrecognized data we skipped
@@ -305,10 +306,12 @@ class Extracter(Debuggable):  # pylint: disable=too-many-instance-attributes
           yield self._GetErrorItem()
         yield item
         self.line = self.line[consumed:]
+        self.charpos += consumed
         continue
       if self.line:
         self.skipped += self.line[:1]
         self.line = self.line[1:]
+        self.charpos += 1
         continue
       if self.skipped:
         yield self._GetErrorItem()
