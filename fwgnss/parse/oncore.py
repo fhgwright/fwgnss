@@ -59,8 +59,7 @@ class Message(binary.BinaryDataItem):
   # FIXME:  It seems that there is no form of byte stuffing in this format.
   # That means that the only way to avoid false CR-LF positives is to know
   # the expected (and fixed) message lengths for each message type.  This
-  # is not currently implemented.  In fact, the current code may trip over
-  # pure LFs in binary data.
+  # is not currently implemented.
   ENDIANNESS = 'big'
   ENDIAN_PREFIX = binary.ENDIAN_PREFIXES[ENDIANNESS]
 
@@ -72,10 +71,11 @@ class Message(binary.BinaryDataItem):
   SYNC = b'@@'
   END = b'\r\n'
   CKS_START = len(SYNC)
-  TRL_OFS = -(TRL_SIZE - len(END))
+  END_LEN = len(END)
+  TRL_OFS = -(TRL_SIZE - END_LEN)
   CKS_END = TRL_OFS
   HDR_REST = HDR_SIZE - CKS_START
-  MIN_END = OVERHEAD - len(END)
+  MIN_END = OVERHEAD - END_LEN
 
   LOG_PAT = 'Oncore-%s(%d)'
   SUMMARY_PAT = LOG_PAT
@@ -92,9 +92,14 @@ class Message(binary.BinaryDataItem):
     if not extracter.line.startswith(cls.SYNC):
       return None, 0
     _, msgtype = cls.HEADER.unpack_from(extracter.line)
-    endpos = extracter.line.find(cls.END)
-    if endpos < cls.MIN_END:
-      return None, 0
+    while True:
+      endpos = extracter.line.find(cls.END)
+      if endpos >= cls.MIN_END:
+        break
+      if len(extracter.line) > cls.LENGTH_LIMIT:
+        return None, 0
+      if not extracter.GetLine(cls.END_LEN):
+        return None, 0
     checksum, _ = cls.TRAILER.unpack_from(extracter.line, endpos + cls.TRL_OFS)
     cbody = bytearray(extracter.line[cls.CKS_START:endpos+cls.CKS_END])
     body = cbody[cls.HDR_SIZE - cls.CKS_START:]
