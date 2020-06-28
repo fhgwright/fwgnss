@@ -117,6 +117,13 @@ class Message(binary.BinaryDataItem):
     """Compute Oncore checksum of data supplied as bytes."""
     return reduce(operator.xor, bytearray(data), 0)
 
+  def _GetLength(self):
+    """Validate length and get full-message version."""
+    # Documentation uses full lengths, so use it here as well.
+    if len(self.data) != self.length:
+      raise binary.LengthError('%d != %d' % (len(self.data), self.length))
+    return self.length + self.OVERHEAD
+
   def Contents(self):
     """Get full message content."""
     if len(self.data) != self.length:
@@ -128,19 +135,16 @@ class Message(binary.BinaryDataItem):
 
   def Summary(self, full=False):
     """Get message summary text."""
-    if len(self.data) != self.length:
-      raise binary.LengthError('%d != %d' % (len(self.data), self.length))
+    length = self._GetLength()
     parser = full and self.parser
     if parser:
-      return self.SUMMARY_DESC_PAT % (self.msgtype, self.length,
-                                      parser.DESCRIPTION)
-    return self.SUMMARY_PAT % (self.msgtype, self.length)
+      return self.SUMMARY_DESC_PAT % (self.msgtype, length, parser.DESCRIPTION)
+    return self.SUMMARY_PAT % (self.msgtype, length)
 
   def LogText(self):
     """Get message text for logging."""
-    if len(self.data) != self.length:
-      raise binary.LengthError('%d != %d' % (len(self.data), self.length))
-    return self.LOG_PAT % (self.msgtype, self.length)
+    length = self._GetLength()
+    return self.LOG_PAT % (self.msgtype, length)
 
 
 class BinaryExtracter(binary.Extracter):
