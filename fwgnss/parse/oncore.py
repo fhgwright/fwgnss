@@ -76,6 +76,7 @@ class Message(binary.BinaryDataItem):
   CKS_END = TRL_OFS
   HDR_REST = HDR_SIZE - CKS_START
   MIN_END = OVERHEAD - END_LEN
+  TYPE_ENCODING = 'ascii'
 
   LOG_PAT = 'Oncore-%s(%d)'
   SUMMARY_PAT = LOG_PAT
@@ -108,7 +109,10 @@ class Message(binary.BinaryDataItem):
       return None, 0
     length = len(body)
     if not isinstance(msgtype, str):
-      msgtype = str(msgtype, encoding='ascii')
+      try:
+        msgtype = str(msgtype, encoding=cls.TYPE_ENCODING)
+      except UnicodeDecodeError:
+        return None, 0
     item = cls.Make(data=body, length=length, msgtype=msgtype)
     return item, length + cls.OVERHEAD
 
