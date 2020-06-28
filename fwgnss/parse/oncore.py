@@ -114,8 +114,8 @@ class Message(binary.BinaryDataItem):
 
   @staticmethod
   def Checksum(data):
-    """Compute Oncore checksum of data supplied as bytes."""
-    return reduce(operator.xor, bytearray(data), 0)
+    """Compute Oncore checksum (simple XOR) of data."""
+    return reduce(operator.xor, data, 0)
 
   def _GetLength(self):
     """Validate length and get full-message version."""
@@ -128,9 +128,10 @@ class Message(binary.BinaryDataItem):
     """Get full message content."""
     if len(self.data) != self.length:
       raise binary.LengthError('%d != %d' % (len(self.data), self.length))
-    checksum = self.Checksum(self.data)
+    type_cks = self.Checksum(bytearray(self.msgtype))
+    checksum = self.Checksum(self.data) ^ type_cks
     header = self.HEADER.pack(self.SYNC, self.msgtype)
-    trailer = self.TRAILER.pack(*checksum)
+    trailer = self.TRAILER.pack(checksum, self.END)
     return b''.join([header, bytes(self.data), trailer])
 
   def Summary(self, full=False):
