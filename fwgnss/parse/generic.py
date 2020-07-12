@@ -54,7 +54,13 @@ class Constants(Debuggable):  # pylint:disable=too-few-public-methods
   SAT_TYPE_GPS = 0
   SAT_TYPE_SBAS = 1
   SAT_TYPE_GLONASS = 2
-  SAT_TYPE_LETTERS = ('G', 'S', 'R')
+  SAT_TYPE_GALILEO = 3
+  SAT_TYPE_BEIDOU = 4
+  SAT_TYPE_QZSS = 5
+  SAT_TYPE_IRNSS = 6
+  SAT_TYPE_IMES = 7
+  # Type letters from RINEX (except IMES)
+  SAT_TYPE_LETTERS = ('G', 'S', 'R', 'E', 'C', 'J', 'I', 'x')
 
   # Signal type codes (internal)
   SIGNAL_L1CA = 0
