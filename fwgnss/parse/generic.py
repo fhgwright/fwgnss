@@ -45,8 +45,10 @@ class Constants(Debuggable):  # pylint:disable=too-few-public-methods
   # System ID codes (NMEA and internal)
   SYSTEM_ID_GPS = 1
   SYSTEM_ID_GLONASS = 2
-  SYSTEM_NAMES = ('GPS', 'GLONASS')  # Beware zero-based vs. one-based
-  SYSTEM_DECODE = {1: 'GPS', 2: 'GLONASS'}
+  SYSTEM_ID_GALILEO = 3
+  SYSTEM_ID_BEIDOU = 4  # From u-blox, may not be officially NMEA
+  SYSTEM_NAMES = ('GPS', 'GLONASS', 'Galileo', 'BeiDou')  # Beware zero-based
+  SYSTEM_DECODE = {1: 'GPS', 2: 'GLONASS', 3: 'Galileo', 4: 'BeiDou'}
 
   # Satellite type codes (internal)
   SAT_TYPE_GPS = 0
