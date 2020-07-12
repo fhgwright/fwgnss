@@ -401,7 +401,7 @@ class NmeaParser(generic.Parser):
           num_msgs, msg_num, num_sats = (0, 0, 4)
         if msg_num == num_msgs:
           num_entries = num_sats - (msg_num - 1) * 4
-        sats_end = 4 * num_entries * 4
+        sats_end = 4 * num_entries + 4
       else:
         sats_end = 20
       sat_data = zip(*[iter(data[4:sats_end])]*4)
