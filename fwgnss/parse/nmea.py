@@ -435,6 +435,27 @@ class NmeaParser(generic.Parser):
       return cls.ParseCommon(item, cls.SYSTEM_ID)
   NMEA_DICT['GLGSV'] = ParseGLGSV
 
+  class ParseGAGSV(ParseGSV):
+    """Parser for GAGSV sentence."""
+    SYSTEM_ID = str(Constants.SYSTEM_ID_GALILEO)
+
+    @classmethod
+    def Parse(cls, item):
+      """Parse the GAGSV item."""
+      return cls.ParseCommon(item, cls.SYSTEM_ID)
+  NMEA_DICT['GAGSV'] = ParseGAGSV
+
+  class ParseGBGSV(ParseGSV):
+    """Parser for GBGSV sentence."""
+    SYSTEM_ID = str(Constants.SYSTEM_ID_BEIDOU)
+
+    @classmethod
+    def Parse(cls, item):
+      """Parse the GBGSV item."""
+      return cls.ParseCommon(item, cls.SYSTEM_ID)
+  NMEA_DICT['GBGSV'] = ParseGBGSV
+  NMEA_DICT['BDGSV'] = ParseGBGSV  # Old unofficial talker ID for BeiDou
+
   class ParseGST(ParseItem):
     """Parser for GxGST sentence."""
     PARSED, MIN_LENGTH = MakeParser(
