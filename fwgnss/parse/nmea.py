@@ -922,6 +922,8 @@ class NmeaDecoder(generic.Decoder):  # pylint: disable=too-many-public-methods
         )
   DECODER_DICT[NmeaParser.ParseGPGSV] = DecodeGSV
   DECODER_DICT[NmeaParser.ParseGLGSV] = DecodeGSV
+  DECODER_DICT[NmeaParser.ParseGAGSV] = DecodeGSV
+  DECODER_DICT[NmeaParser.ParseGBGSV] = DecodeGSV
 
   DecGST = collections.namedtuple(
       'dGST',
