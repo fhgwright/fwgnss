@@ -609,16 +609,43 @@ class NmeaDecoder(generic.Decoder):  # pylint: disable=too-many-public-methods
     return value, hemi
 
   @staticmethod
-  def DecodeSatNum(num):
+  def DecodeSatNum(num, system=None):  # pylint: disable=too-many-branches
     """Decode satellite number into separate system and number."""
+    # Based largely on u-blox 9 doc
     if num is None:
       sat_type, sat_id = None, None
+    elif num <= 36 and system == Constants.SYSTEM_ID_GALILEO:
+      sat_type, sat_id = Constants.SAT_TYPE_GALILEO, num
+    elif num <= 37 and system == Constants.SYSTEM_ID_BEIDOU:
+      sat_type, sat_id = Constants.SAT_TYPE_BEIDOU, num
     elif num <= 32:
       sat_type, sat_id = Constants.SAT_TYPE_GPS, num
     elif num <= 64:
       sat_type, sat_id = Constants.SAT_TYPE_SBAS, num + 87
-    else:
+    elif num <= 96:
       sat_type, sat_id = Constants.SAT_TYPE_GLONASS, num - 64
+    elif num < 152:
+      sat_type, sat_id = None, None
+    elif num <= 158:
+      sat_type, sat_id = Constants.SAT_TYPE_SBAS, num
+    elif num < 173:
+      sat_type, sat_id = None, None
+    elif num <= 182:
+      sat_type, sat_id = Constants.SAT_TYPE_IMES, num - 172
+    elif num < 193:
+      sat_type, sat_id = None, None
+    elif num <= 202:
+      sat_type, sat_id = Constants.SAT_TYPE_QZSS, num - 192
+    elif num < 301:
+      sat_type, sat_id = None, None
+    elif num <= 336:
+      sat_type, sat_id = Constants.SAT_TYPE_GALILEO, num - 300
+    elif num < 401:
+      sat_type, sat_id = None, None
+    elif num <= 437:
+      sat_type, sat_id = Constants.SAT_TYPE_BEIDOU, num - 400
+    else:
+      sat_type, sat_id = None, None
     return sat_type, sat_id
 
   DecGGA = collections.namedtuple(
