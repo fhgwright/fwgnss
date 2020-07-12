@@ -522,6 +522,7 @@ Sentence.PARSE_CLASS = NmeaParser
 class NmeaDecoder(generic.Decoder):  # pylint: disable=too-many-public-methods
   """Class for NMEA sentence decoder."""
   # Use this for vendor-specific subclassing.
+  _CV_INCLUDE = ['_MakeGSV_list', '_MakeGSV_dict']
   DECODER_DICT = {}
 
   def __init__(self):
@@ -874,9 +875,9 @@ class NmeaDecoder(generic.Decoder):  # pylint: disable=too-many-public-methods
       'sat type num elev az snr'
       )
   @classmethod
-  def _MakeGSV_VIEW(cls, sat_view):  # pylint: disable=invalid-name
+  def _MakeGSV_VIEW(cls, sat_view, system=None):  # pylint: disable=invalid-name
     sat = int(sat_view.sat)
-    sat_type, num = cls.DecodeSatNum(sat)
+    sat_type, num = cls.DecodeSatNum(sat, system)
     elev = sat_view.elev
     elev = int(elev) if elev else None
     azim = sat_view.az
@@ -885,6 +886,28 @@ class NmeaDecoder(generic.Decoder):  # pylint: disable=too-many-public-methods
     snr = int(snr) if snr else None
     return cls.GSV_VIEW(sat=sat, type=sat_type, num=num,
                         elev=elev, az=azim, snr=snr)
+
+  _MakeGSV_list = []
+
+  @classmethod
+  def _MakeGSV_GALILEO(cls, sat_view):  # pylint: disable=invalid-name
+    return cls._MakeGSV_VIEW(sat_view, Constants.SYSTEM_ID_GALILEO)
+
+  _MakeGSV_list.append([Constants.SYSTEM_ID_GALILEO, _MakeGSV_GALILEO])
+
+  @classmethod
+  def _MakeGSV_BEIDOU(cls, sat_view):  # pylint: disable=invalid-name
+    return cls._MakeGSV_VIEW(sat_view, Constants.SYSTEM_ID_BEIDOU)
+
+  _MakeGSV_list.append([Constants.SYSTEM_ID_BEIDOU, _MakeGSV_BEIDOU])
+
+  _MakeGSV_dict = {}  # Need to defer building dict
+
+  @classmethod
+  def _MakeMakeGSVs(cls):
+    for sys, func in cls._MakeGSV_list:
+      bound = func.__get__(cls, cls)
+      cls._MakeGSV_dict[sys] = bound
 
   DecGSV = collections.namedtuple(
       'dGSV',
@@ -911,8 +934,9 @@ class NmeaDecoder(generic.Decoder):  # pylint: disable=too-many-public-methods
     if num_msgs < 1 or msg_num < 1 or in_view < 0 or msg_num > num_msgs:
       item.decode_error = 'Bad %s parameters' % item.msgtype
       return None
+    gsv_func = self._MakeGSV_dict.get(system, self._MakeGSV_VIEW)
     try:
-      sat_views = list(map(self._MakeGSV_VIEW, parsed.sat_views))
+      sat_views = list(map(gsv_func, parsed.sat_views))
     except ValueError:
       item.decode_error = 'Bad %s satellite data' % item.msgtype
       return None
@@ -1028,6 +1052,8 @@ class NmeaDecoder(generic.Decoder):  # pylint: disable=too-many-public-methods
         fault_prob, range_bias, range_bias_sd, system, signal
         )
   DECODER_DICT[NmeaParser.ParseGBS] = DecodeGBS
+
+NmeaDecoder._MakeMakeGSVs()
 
 
 class Extracter(NmeaExtracter):
