@@ -264,6 +264,8 @@ class NmeaFormatter(generic.Formatter):
     self._DumpGSV(indent, track_str, item.parsed, decoded, decoded.sat_views)
   FORMATTER_DICT[PARSER.GetParser('GPGSV')] = FormatGSV
   FORMATTER_DICT[PARSER.GetParser('GLGSV')] = FormatGSV
+  FORMATTER_DICT[PARSER.GetParser('GAGSV')] = FormatGSV
+  FORMATTER_DICT[PARSER.GetParser('GBGSV')] = FormatGSV
 
   def _DumpGSV(self,  # pylint: disable=too-many-arguments
                indent, prefix, parsed, decoded, sat_data):
