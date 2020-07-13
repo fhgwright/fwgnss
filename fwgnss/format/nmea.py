@@ -270,8 +270,7 @@ class NmeaFormatter(generic.Formatter):
   def _DumpGSV(self,  # pylint: disable=too-many-arguments
                indent, prefix, parsed, decoded, sat_data):
     if parsed.signal:
-      signal_str = ' %d (%s)' % (decoded.signal,
-                                 Constants.SIGNAL_DECODE[decoded.signal])
+      signal_str = ' ' + self.DecodeNum(decoded.signal, Constants.SIGNAL_DECODE)
     else:
       signal_str = ''
     try:
