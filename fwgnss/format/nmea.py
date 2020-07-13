@@ -95,7 +95,7 @@ class NmeaFormatter(generic.Formatter):
 
   def _DecodeNavModes(self, navmode):
     mode_strings = []
-    for system, mode in zip(Constants.SYSTEM_NAMES, navmode):
+    for system, mode in zip(Constants.SYSTEM_NAME_LIST, navmode):
       mode_string = self.DecodeChar(mode, self.decoder.NAV_MODE_DECODE)
       mode_strings.append('%s = %s' % (system, mode_string))
     return mode_strings

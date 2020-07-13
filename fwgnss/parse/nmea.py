@@ -31,6 +31,8 @@ except NameError:
 
 from . import generic
 
+# pylint: disable=too-many-lines
+
 
 class Constants(generic.Constants):  # pylint: disable=too-few-public-methods
   """Class which holds various constant definitions."""
@@ -38,6 +40,40 @@ class Constants(generic.Constants):  # pylint: disable=too-few-public-methods
   # Signal ID codes (for, e.g., GxGSV) - not unique across systems
   SIGNAL_ID_L1CA = 1
   SIGNAL_DECODE = {1: 'L1 C/A'}
+
+  # GPS signal IDs
+  SIGNAL_ID_GPS_L1CA = 1
+  SIGNAL_ID_GPS_L2CM = 5
+  SIGNAL_ID_GPS_L2CL = 6
+  SIGNAL_DECODE_GPS = {1: 'L1 C/A', 5: 'L2 CM', 6: 'L2 CL'}
+
+  # GLONASS signal IDs
+  SIGNAL_ID_GLO_L1OF = 1
+  SIGNAL_ID_GLO_L2OF = 2
+  SIGNAL_DECODE_GLONASS = {1: 'L1 OF', 2: 'L2 OF'}
+
+  # Galileo signal IDs
+  SIGNAL_ID_GAL_E1 = 7
+  SIGNAL_ID_GAL_E5 = 2
+  SIGNAL_DECODE_GALILEO = {7: 'E1', 2: 'E5'}
+
+  # BeiDou signal IDs
+  SIGNAL_ID_BEI_B1 = 1
+  SIGNAL_ID_BEI_B2 = 3
+  SIGNAL_DECODE_BEIDOU = {1: 'B1', 2: 'B2'}
+
+  SIGNAL_ID_MAP = {
+      generic.Constants.SYSTEM_ID_GPS: SIGNAL_DECODE_GPS,
+      generic.Constants.SYSTEM_ID_GLONASS: SIGNAL_DECODE_GLONASS,
+      generic.Constants.SYSTEM_ID_GALILEO: SIGNAL_DECODE_GALILEO,
+      generic.Constants.SYSTEM_ID_BEIDOU: SIGNAL_DECODE_BEIDOU,
+      }
+
+  SYSTEM_ID_LIST = tuple(range(generic.Constants.SYSTEM_ID_GPS,
+                               generic.Constants.SYSTEM_ID_BEIDOU + 1))
+  SYSTEM_NAME_LIST = tuple(
+      generic.Constants.SYSTEM_DECODE[x] for x in SYSTEM_ID_LIST
+      )
 
 
 class Sentence(generic.TextItem):
@@ -1053,7 +1089,7 @@ class NmeaDecoder(generic.Decoder):  # pylint: disable=too-many-public-methods
         )
   DECODER_DICT[NmeaParser.ParseGBS] = DecodeGBS
 
-NmeaDecoder._MakeMakeGSVs()
+NmeaDecoder._MakeMakeGSVs()  # pylint: disable=protected-access
 
 
 class Extracter(NmeaExtracter):
