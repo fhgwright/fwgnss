@@ -37,9 +37,6 @@ from . import generic
 class Constants(generic.Constants):  # pylint: disable=too-few-public-methods
   """Class which holds various constant definitions."""
 
-  # Signal ID codes (for, e.g., GxGSV) - not unique across systems
-  SIGNAL_ID_L1CA = 1
-
   # GPS signal IDs
   SIGNAL_ID_GPS_L1CA = 1
   SIGNAL_ID_GPS_L2CM = 5
@@ -885,7 +882,7 @@ class NmeaDecoder(generic.Decoder):  # pylint: disable=too-many-public-methods
       return None
     try:
       system = self.DecodeInt(parsed.system) or Constants.SYSTEM_ID_GPS
-      signal = self.DecodeInt(parsed.signal) or Constants.SIGNAL_ID_L1CA
+      signal = self.DecodeInt(parsed.signal) or Constants.SIGNAL_ID_GPS_L1CA
       mode = int(parsed.mode)
       residuals = list(map(float, parsed.residuals))
     except ValueError:
@@ -963,7 +960,7 @@ class NmeaDecoder(generic.Decoder):  # pylint: disable=too-many-public-methods
     """Decode xxGSV sentence."""
     parsed = item.parsed
     try:
-      signal = self.DecodeInt(parsed.signal) or Constants.SIGNAL_ID_L1CA
+      signal = self.DecodeInt(parsed.signal) or Constants.SIGNAL_ID_GPS_L1CA
       in_view, system = int(parsed.num_sats), int(parsed.system)
       num_msgs, msg_num = int(parsed.num_msgs), int(parsed.msg_num)
     except ValueError:
