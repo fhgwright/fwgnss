@@ -45,9 +45,10 @@ class Formatter(Debuggable):
   GPS_LEAP_OFFSET = xdatetime.Constants.GPS_LEAP_OFFSET
 
   # Formatter levels to allow reproducing older behavior
-  FMT_ORIGINAL = 0    # Earliest version with retained results
-  FMT_UPDATED = 1     # With some updates
-  FMT_WAAS_BASIC = 2  # Introduce WAAS type decodes
+  FMT_ORIGINAL = 0            # Earliest version with retained results
+  FMT_UPDATED = 1             # With some updates
+  FMT_WAAS_BASIC = 2          # Introduce WAAS type decodes
+  FMT_NEW_SIGNAL_DECODES = 3  # New system-dependent signal decodes
 
   # Dummy defs to placate pylint, overridden in subclasses
   EXTRACTER = generic.Extracter

@@ -93,10 +93,11 @@ class NmeaFormatter(generic.Formatter):
                                       decoded.alt_u)]
     self.Send(3, ''.join(pos_list))
 
-  @classmethod
-  def _DecodeSignal(cls, signal, system=None, default='???'):
-    sig_map = Constants.SIGNAL_DECODE
-    return cls.DecodeNum(signal, sig_map, default=default)
+  def _DecodeSignal(self, signal, system=None, default='???'):
+    sig_map = Constants.SIGNAL_ID_MAP.get(system, {})
+    if self.fmt_level < self.FMT_NEW_SIGNAL_DECODES:
+      sig_map = Constants.OLD_SIGNAL_DECODE
+    return self.DecodeNum(signal, sig_map, default=default)
 
   @classmethod
   def _DecodeSystem(cls, system, default='???'):

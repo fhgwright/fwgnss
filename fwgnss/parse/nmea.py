@@ -39,7 +39,6 @@ class Constants(generic.Constants):  # pylint: disable=too-few-public-methods
 
   # Signal ID codes (for, e.g., GxGSV) - not unique across systems
   SIGNAL_ID_L1CA = 1
-  SIGNAL_DECODE = {1: 'L1 C/A'}
 
   # GPS signal IDs
   SIGNAL_ID_GPS_L1CA = 1
@@ -74,6 +73,9 @@ class Constants(generic.Constants):  # pylint: disable=too-few-public-methods
   SYSTEM_NAME_LIST = tuple(
       generic.Constants.SYSTEM_DECODE[x] for x in SYSTEM_ID_LIST
       )
+
+  # Old decode map, used when needed for compatibility
+  OLD_SIGNAL_DECODE = {1: 'L1 C/A'}
 
 
 class Sentence(generic.TextItem):
