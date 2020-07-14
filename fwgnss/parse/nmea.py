@@ -54,8 +54,8 @@ class Constants(generic.Constants):  # pylint: disable=too-few-public-methods
   SIGNAL_DECODE_GALILEO = {7: 'E1', 2: 'E5'}
 
   # BeiDou signal IDs
-  SIGNAL_ID_BEI_B1 = 1
-  SIGNAL_ID_BEI_B2 = 3
+  SIGNAL_ID_BDS_B1 = 1
+  SIGNAL_ID_BDS_B2 = 3
   SIGNAL_DECODE_BEIDOU = {1: 'B1', 2: 'B2'}
 
   SIGNAL_ID_MAP = {
