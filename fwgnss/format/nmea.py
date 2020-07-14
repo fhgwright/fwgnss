@@ -93,6 +93,15 @@ class NmeaFormatter(generic.Formatter):
                                       decoded.alt_u)]
     self.Send(3, ''.join(pos_list))
 
+  @classmethod
+  def _DecodeSignal(cls, signal, system=None, default='???'):
+    sig_map = Constants.SIGNAL_DECODE
+    return cls.DecodeNum(signal, sig_map, default=default)
+
+  @classmethod
+  def _DecodeSystem(cls, system, default='???'):
+    return cls.DecodeNum(system, Constants.SYSTEM_DECODE, default=default)
+
   def _DecodeNavModes(self, navmode):
     mode_strings = []
     for system, mode in zip(Constants.SYSTEM_NAME_LIST, navmode):
@@ -205,8 +214,7 @@ class NmeaFormatter(generic.Formatter):
     pos_mode_str = self.DecodeChar(parsed.pos_mode,
                                    self.decoder.GSA_POS_MODE_DECODE)
     if parsed.system:
-      system_str = ' for system ' + self.DecodeNum(decoded.system,
-                                                   Constants.SYSTEM_DECODE)
+      system_str = ' for system ' + self._DecodeSystem(decoded.system)
     else:
       system_str = ''
     num_sats = len(decoded.sat_list)
@@ -222,7 +230,7 @@ class NmeaFormatter(generic.Formatter):
     else:
       self.Send(3, '%s from %d satellites' % (dop_str, num_sats))
     for signal, residuals in decoded.sig_residuals:
-      self._DumpResiduals(4, residuals, signal)
+      self._DumpResiduals(4, residuals, signal, decoded.system)
   FORMATTER_DICT[PARSER.GetParser('GPGSA')] = FormatGSA
 
   def FormatGRS(self, item):
@@ -233,20 +241,18 @@ class NmeaFormatter(generic.Formatter):
     mode_str = self.DecodeNum(decoded.mode, self.decoder.GRS_MODE_DECODE)
     decode_str = '%s UTC: Mode = %s' % (time_str, mode_str)
     if parsed.system:
-      decode_str += ', System = %s' % self.DecodeNum(decoded.system,
-                                                     Constants.SYSTEM_DECODE)
+      decode_str += ', System = %s' % self._DecodeSystem(decoded.system)
     if parsed.signal:
-      decode_str += ', Signal = %s' % self.DecodeNum(decoded.signal,
-                                                     Constants.SIGNAL_DECODE)
+      decode_str += ', Signal = %s' % self._DecodeSignal(decoded.signal,
+                                                         decoded.system)
     self.Send(2, decode_str)
     if decoded.sat_residuals:
       self._DumpResiduals(4, decoded.sat_residuals)
   FORMATTER_DICT[PARSER.GetParser('GPGRS')] = FormatGRS
 
-  def _DumpResiduals(self, indent, residuals, signal=None):
+  def _DumpResiduals(self, indent, residuals, signal=None, system=None):
     if signal is not None:
-      signal_str = ' for signal ' + self.DecodeNum(signal,
-                                                   Constants.SIGNAL_DECODE)
+      signal_str = ' for signal ' + self._DecodeSignal(signal, system)
     else:
       signal_str = ''
     self.Send(indent, 'Range residuals%s:' % signal_str)
@@ -270,7 +276,7 @@ class NmeaFormatter(generic.Formatter):
   def _DumpGSV(self,  # pylint: disable=too-many-arguments
                indent, prefix, parsed, decoded, sat_data):
     if parsed.signal:
-      signal_str = ' ' + self.DecodeNum(decoded.signal, Constants.SIGNAL_DECODE)
+      signal_str = ' ' + self._DecodeSignal(decoded.signal, decoded.system)
     else:
       signal_str = ''
     try:
@@ -345,12 +351,10 @@ class NmeaFormatter(generic.Formatter):
     status_list = extra or []
     if decoded.system:
       status_list.append(' for system %s'
-                         % self.DecodeNum(decoded.system,
-                                          Constants.SYSTEM_DECODE))
+                         % self._DecodeSystem(decoded.system))
     if decoded.signal:
       status_list.append(', signal %s'
-                         % self.DecodeNum(decoded.signal,
-                                          Constants.SIGNAL_DECODE))
+                         % self._DecodeSignal(decoded.signal, decoded.system))
     self.Send(4, ''.join(status_list))
   FORMATTER_DICT[PARSER.GetParser('GPGBS')] = FormatGBS
 
