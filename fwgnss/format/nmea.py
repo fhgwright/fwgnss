@@ -345,12 +345,12 @@ class NmeaFormatter(generic.Formatter):
     status_list = extra or []
     if decoded.system:
       status_list.append(' for system %s'
-                         % self.DecodeChar(decoded.system,
-                                           Constants.SYSTEM_DECODE))
+                         % self.DecodeNum(decoded.system,
+                                          Constants.SYSTEM_DECODE))
     if decoded.signal:
       status_list.append(', signal %s'
-                         % self.DecodeChar(decoded.signal,
-                                           Constants.SIGNAL_DECODE))
+                         % self.DecodeNum(decoded.signal,
+                                          Constants.SIGNAL_DECODE))
     self.Send(4, ''.join(status_list))
   FORMATTER_DICT[PARSER.GetParser('GPGBS')] = FormatGBS
 
