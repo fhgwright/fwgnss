@@ -117,24 +117,27 @@ def main(argv):
     pdb_module.set_trace()
     extracter.linebreak = lb  # Concise name for typing
 
-  for item in extracter.GetItems():
-    try:
-      formatter.Put(item)
-    # Catch all parse/decode/format exceptions here
-    except Exception:  # pylint: disable=broad-except
-      if parsed_args.stop_on_errors or parsed_args.stop_on_warnings:
-        raise
-    lines = formatter.Get()
-    if parsed_args.output:
+  try:
+    for item in extracter.GetItems():
       try:
-        for line in lines:
-          print(line, file=parsed_args.output)
-      except IOError:
-        return 1
-    errors = formatter.GetErrors()
-    if report_errors:
-      for line in errors:
-        print(line, file=sys.stderr)
+        formatter.Put(item)
+      # Catch all parse/decode/format exceptions here
+      except Exception:  # pylint: disable=broad-except
+        if parsed_args.stop_on_errors or parsed_args.stop_on_warnings:
+          raise
+      lines = formatter.Get()
+      if parsed_args.output:
+        try:
+          for line in lines:
+            print(line, file=parsed_args.output)
+        except IOError:
+          return 1
+      errors = formatter.GetErrors()
+      if report_errors:
+        for line in errors:
+          print(line, file=sys.stderr)
+  except KeyboardInterrupt:
+    print()
 
   return 0
 

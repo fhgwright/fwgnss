@@ -236,53 +236,57 @@ def main(argv):
     extracter.linebreak = lb  # Concise name for typing
 
   if parsed_args.input:  # pylint: disable=too-many-nested-blocks
-    for nmea_time, item in GetFilteredNmeaData(
-        extracter, parsed_args.pattern, parsed_args.min_match):
+    try:
+      for nmea_time, item in GetFilteredNmeaData(
+          extracter, parsed_args.pattern, parsed_args.min_match):
 
-      if nmea_time == nmea_break:
-        if pdb_module:
-          pdb_module.set_trace()
+        if nmea_time == nmea_break:
+          if pdb_module:
+            pdb_module.set_trace()
 
-      if log_time != nmea_time or not item:
-        DumpLogs(parsed_args.log_other, log_time, control_log, binary_log)
-        log_time = nmea_time
+        if log_time != nmea_time or not item:
+          DumpLogs(parsed_args.log_other, log_time, control_log, binary_log)
+          log_time = nmea_time
 
-      if isinstance(item, combined.Sentence):
-        DumpLogs(parsed_args.log_other, log_time, control_log, binary_log)
-        if exclude_times:
-          excluded = CheckTimeList(nmea_time, exclude_times)
-          if excluded:
-            continue
-        if include_times:
-          included = CheckTimeList(nmea_time, include_times)
-          if not included:
-            continue
-        if parsed_args.output:
-          try:
-            if parsed_args.strip_crs:
-              parsed_args.output.write(item.Contents().replace('\r', ''))
-            else:
-              parsed_args.output.write(item.Contents())
-          except IOError:
-            pass
-        continue
-
-      if isinstance(item, combined.ControlItem):
-        if parsed_args.log_other and not parsed_args.exclude_control:
-          control_log.append(item.LogText())
-        continue
-
-      if isinstance(item, combined.BinaryItem):
-        msgtype = item.msgtype
-        if include_bin is not None and not msgtype in include_bin:
+        if isinstance(item, combined.Sentence):
+          DumpLogs(parsed_args.log_other, log_time, control_log, binary_log)
+          if exclude_times:
+            excluded = CheckTimeList(nmea_time, exclude_times)
+            if excluded:
+              continue
+          if include_times:
+            included = CheckTimeList(nmea_time, include_times)
+            if not included:
+              continue
+          if parsed_args.output:
+            try:
+              if parsed_args.strip_crs:
+                parsed_args.output.write(item.Contents().replace('\r', ''))
+              else:
+                parsed_args.output.write(item.Contents())
+            except IOError:
+              pass
           continue
-        if exclude_bin and msgtype in exclude_bin:
+
+        if isinstance(item, combined.ControlItem):
+          if parsed_args.log_other and not parsed_args.exclude_control:
+            control_log.append(item.LogText())
           continue
-        if parsed_args.binary_out:
-          parsed_args.binary_out.write(item.Contents())
-        if parsed_args.log_other:
-          binary_log.append(item.LogText())
-        continue
+
+        if isinstance(item, combined.BinaryItem):
+          msgtype = item.msgtype
+          if include_bin is not None and not msgtype in include_bin:
+            continue
+          if exclude_bin and msgtype in exclude_bin:
+            continue
+          if parsed_args.binary_out:
+            parsed_args.binary_out.write(item.Contents())
+          if parsed_args.log_other:
+            binary_log.append(item.LogText())
+          continue
+
+    except KeyboardInterrupt:
+      print()
 
     DumpLogs(parsed_args.log_other, log_time, control_log, binary_log)
 
