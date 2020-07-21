@@ -357,7 +357,8 @@ class NmeaFormatter(generic.Formatter):
     if parsed.signal:
       status_list.append(', signal %s'
                          % self._DecodeSignal(decoded.signal, decoded.system))
-    self.Send(4, ''.join(status_list))
+    if status_list:
+      self.Send(4, ''.join(status_list))
   FORMATTER_DICT[PARSER.GetParser('GPGBS')] = FormatGBS
 
 
