@@ -544,11 +544,19 @@ class NmeaParser(generic.Parser):
         'time lat_err lon_err alt_err bad_sat fault_prob '
         + 'range_bias range_bias_sd system signal'
         )
+    MIN_LENGTH -= 2
 
     @classmethod
     def Parse(cls, item):
       """Parse the GxGBS sentence."""
-      return cls.PARSED._make(item.data[1:11])
+      data = item.data
+      sysid, sigid = '', ''
+      try:
+        sysid = data[9]
+        sigid = data[10]
+      except IndexError:
+        pass
+      return cls.PARSED._make(item.data[1:9] + [sysid, sigid])
   NMEA_DICT['GPGBS'] = ParseGBS
 
 Sentence.PARSE_CLASS = NmeaParser
@@ -1080,8 +1088,8 @@ class NmeaDecoder(generic.Decoder):  # pylint: disable=too-many-public-methods
     fault_prob = self.DecodeFloat(parsed.fault_prob)
     range_bias = self.DecodeFloat(parsed.range_bias)
     range_bias_sd = self.DecodeFloat(parsed.range_bias_sd)
-    system = self.DecodeInt(parsed.system)
-    signal = self.DecodeInt(parsed.signal)
+    system = self.DecodeInt(parsed.system) or Constants.SYSTEM_ID_GPS
+    signal = self.DecodeInt(parsed.signal) or Constants.SIGNAL_ID_GPS_L1CA
     return self.DecGBS(
         time, lat_err, lon_err, alt_err, bad_sat_view,
         fault_prob, range_bias, range_bias_sd, system, signal

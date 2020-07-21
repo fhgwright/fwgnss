@@ -332,6 +332,7 @@ class NmeaFormatter(generic.Formatter):
   def FormatGBS(self, item, extra=None):  # pylint: disable=invalid-name
     """Format a GBS sentence."""
     # The extra arg allows an insertion for the PSAT,GBS case
+    parsed = item.parsed
     decoded = item.decoded
     self.Send(2, 'For data at %s UTC:' % self.EncodeTime(decoded.time))
     if (decoded.lat_err or decoded.lon_err or decoded.alt_err
@@ -350,10 +351,10 @@ class NmeaFormatter(generic.Formatter):
     elif self.fmt_level < self.FMT_UPDATED:
       return
     status_list = extra or []
-    if decoded.system:
+    if parsed.system:
       status_list.append(' for system %s'
                          % self._DecodeSystem(decoded.system))
-    if decoded.signal:
+    if parsed.signal:
       status_list.append(', signal %s'
                          % self._DecodeSignal(decoded.signal, decoded.system))
     self.Send(4, ''.join(status_list))
