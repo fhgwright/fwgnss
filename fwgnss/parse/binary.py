@@ -55,7 +55,11 @@ def MakeBasicParser(name, name_list, prefix, pat_list):
 
 def MakeParser(parser_name,  # pylint: disable=too-many-locals
                prefix, struct_dict, pattern):
-  """Create a parser with a given name and struct pattern."""
+  """Create a parser with a given name and struct pattern.
+
+  Format of each pattern item is: <name>:<type>[*<count>]
+  where <type> is either single letter for Python struct, or parser name.
+  """
   pat_list = [x.split(':') for x in pattern.split()]
   name_list = []
   group_list = []
