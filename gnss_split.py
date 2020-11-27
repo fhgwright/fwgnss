@@ -49,6 +49,13 @@ def CsvTimes(values):
   return result
 
 
+def EncodeTime(time, frac_digits=2):
+  """Format a time as HHMMSS.ff."""
+  strip = 6 - frac_digits if frac_digits else 7
+  rnd = 10 ** (9 - frac_digits) // 2
+  return time.strftime('%H%M%S.%f', rnd)[:-strip]
+
+
 def CheckTime(tvalue, trange):
   """See if time is within range, with simple wraparound handling."""
   if trange[1] < trange[0]:
@@ -68,7 +75,7 @@ def CheckTimeList(tvalstr, tlist):
   return False
 
 
-def GetBundledNmeaData(extracter):
+def GetBundledNmeaData(extracter, decoder):
   """Get groups of NMEA data corresponding to one GPGGA sentence,
   with GxGSA content reported for filtering.
 
@@ -102,7 +109,9 @@ def GetBundledNmeaData(extracter):
         nmea_data = []
         other_data = []
         gsa_data = []
-      nmea_time = data[1]
+      parsed = combined.Parser.Parse(item)
+      decoded = parsed and decoder.Decode(item)
+      nmea_time = EncodeTime(decoded.time) if decoded else ''
     elif stype in ['GPGSA', 'GNGSA', 'GLGSA'] and not gsa_data:
       gsa_data = data
     nmea_data.append(item)
@@ -111,7 +120,7 @@ def GetBundledNmeaData(extracter):
 
 
 def GetFilteredNmeaData(  # pylint: disable=too-many-branches,too-many-locals
-    extracter, pattern, need_match
+    extracter, decoder, pattern, need_match
     ):
   """Get NMEA lines, with GxGSA filtering.
 
@@ -131,7 +140,9 @@ def GetFilteredNmeaData(  # pylint: disable=too-many-branches,too-many-locals
     return current and pair[1].match(pair[0])
 
   # pylint: disable=too-many-nested-blocks
-  for nmea_time, nmea_list, gsa_data, other in GetBundledNmeaData(extracter):
+  for nmea_time, nmea_list, gsa_data, other in GetBundledNmeaData(
+      extracter, decoder
+      ):
     # If filtering, ignore anything without GSA data for comparison
     if not gsa_data and pattern:
       continue
@@ -227,6 +238,7 @@ def main(argv):
   binary_log = []
   log_time = ''
   extracter = combined.Extracter(parsed_args.input)
+  decoder = combined.Decoder()
   nmea_break = None
   lb = 0  # pylint: disable=invalid-name
 
@@ -238,7 +250,7 @@ def main(argv):
   if parsed_args.input:  # pylint: disable=too-many-nested-blocks
     try:
       for nmea_time, item in GetFilteredNmeaData(
-          extracter, parsed_args.pattern, parsed_args.min_match):
+          extracter, decoder, parsed_args.pattern, parsed_args.min_match):
 
         if nmea_time == nmea_break:
           if pdb_module:
