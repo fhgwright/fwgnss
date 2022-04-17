@@ -1,6 +1,6 @@
 """Module for generic formatting of GNSS data into human-friendly form."""
 
-#                      Copyright (c) 2019
+#                      Copyright (c) 2022
 #                   Frederick H. G. Wright II
 #                          fw@fwright.net
 #
@@ -68,7 +68,8 @@ class Formatter(Debuggable):
     self.stop_on_error = False     # Turn parse/decode errors into exceptions
     self.hide_warnings = False     # Exclude warnings from stderr
     self.exclude_warnings = False  # Exclude warnings from output
-    self.fmt_level = 999999  # Allow everything by default
+    self.show_offsets = False      # Don't show offsets by default
+    self.fmt_level = 999999        # Allow everything by default
 
   def SetFormatLevel(self, level):
     """Set formatter compatibility level."""
@@ -81,6 +82,8 @@ class Formatter(Debuggable):
       if parser not in self.filter:
         return
     parsed = self.PARSER.Parse(item)  # Need parser set up for DESCRIPTION
+    if self.show_offsets:
+      self.Send(0, '@ %08X:' % item.charpos)
     summary = item.Summary(full=True)
     self._last_summary = summary
     if summary:

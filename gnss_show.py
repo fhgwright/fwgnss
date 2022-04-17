@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Program to decode and print GNSS data."""
 
-#                      Copyright (c) 2020
+#                      Copyright (c) 2022
 #                   Frederick H. G. Wright II
 #                          fw@fwright.net
 #
@@ -80,6 +80,8 @@ class ArgParser(object):  # pylint: disable=too-few-public-methods
                       help='hide warnings from stderr')
   PARSER.add_argument('-Q', '--exclude-warnings', action='store_true',
                       help='exclude warnings from output')
+  PARSER.add_argument('-O', '--show-offsets', action='store_true',
+                      help='show data stream offsets in output')
   PARSER.add_argument('--format-level', type=int, help='format-level value')
 
   @classmethod
@@ -110,6 +112,7 @@ def main(argv):
   formatter.stop_on_error = parsed_args.stop_on_warnings
   formatter.hide_warnings = parsed_args.hide_warnings
   formatter.exclude_warnings = parsed_args.exclude_warnings
+  formatter.show_offsets = parsed_args.show_offsets
 
   pdb_module = sys.modules.get('pdb')
   if pdb_module:

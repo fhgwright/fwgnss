@@ -1,6 +1,6 @@
 """Generic GNSS parsing base."""
 
-#                      Copyright (c) 2019
+#                      Copyright (c) 2022
 #                   Frederick H. G. Wright II
 #                          fw@fwright.net
 #
@@ -89,7 +89,7 @@ class BaseItem(Debuggable):  # pylint:disable=too-many-instance-attributes
 
   __slots__ = ('data', 'length', 'msgtype', 'subtype',
                'parser', 'parsed', 'parse_error',
-               'decoded', 'decode_error')
+               'decoded', 'decode_error', 'charpos')
 
   def __init__(self, data=None, length=None, msgtype=None, subtype=None):
     self.data = data
@@ -101,6 +101,7 @@ class BaseItem(Debuggable):  # pylint:disable=too-many-instance-attributes
     self.parse_error = None
     self.decoded = None
     self.decode_error = None
+    self.charpos = None
 
   @staticmethod
   def Contents():
@@ -210,7 +211,7 @@ class Extracter(Debuggable):  # pylint: disable=too-many-instance-attributes
   def __init__(self, infile=None):
     self.input = infile
     self.line = b''
-    self.charpos = 0       # For debugging
+    self.charpos = 0
     self.linenum = 0       # For debugging
     self.linebreak = 0     # To stop on line for debugging
     self.skipped = b''     # Unrecognized data we skipped
@@ -293,6 +294,7 @@ class Extracter(Debuggable):  # pylint: disable=too-many-instance-attributes
     """Get an error item for skipped data, and reset skipped."""
     item = ErrorItem.Make(self.skipped)
     self.skipped = b''
+    item.charpos = self.charpos
     return item
 
   def GetItems(self):
@@ -311,6 +313,7 @@ class Extracter(Debuggable):  # pylint: disable=too-many-instance-attributes
       if item:
         if self.skipped:
           yield self._GetErrorItem()
+        item.charpos = self.charpos
         yield item
         self.line = self.line[consumed:]
         self.charpos += consumed
