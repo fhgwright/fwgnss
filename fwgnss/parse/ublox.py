@@ -1,6 +1,6 @@
 """Module for parsing u-Blox NMEA and binary messages."""
 
-#                      Copyright (c) 2019
+#                      Copyright (c) 2022
 #                   Frederick H. G. Wright II
 #                          fw@fwright.net
 #
@@ -23,6 +23,7 @@ from __future__ import absolute_import, print_function, division
 
 from . import binary
 from . import nmea
+from . import ubx_dict
 
 
 class Constants(nmea.Constants,  # pylint: disable=too-few-public-methods
@@ -64,6 +65,8 @@ class Message(binary.BinaryDataItem):
   LOG_PAT = 'UBX-%02X-%02X(%d)'
   SUMMARY_PAT = LOG_PAT
   SUMMARY_DESC_PAT = SUMMARY_PAT + ': %s'
+  SUMMARY_DEC_PAT = SUMMARY_PAT + ': UBX-%s'
+  SUMMARY_PDEC_PAT = SUMMARY_PAT + ': UBX-%s-???'
 
   __slots__ = ()
 
@@ -127,6 +130,14 @@ class Message(binary.BinaryDataItem):
     if parser:
       return self.SUMMARY_DESC_PAT % (self.msgtype, self.subtype, self.length,
                                       parser.DESCRIPTION)
+    dectype = ubx_dict.UBX_DICT.get((self.msgtype, self.subtype))
+    if dectype:
+      return self.SUMMARY_DEC_PAT % (self.msgtype, self.subtype, self.length,
+                                     dectype)
+    dectype = ubx_dict.UBX_DICT.get(self.msgtype)
+    if dectype:
+      return self.SUMMARY_PDEC_PAT % (self.msgtype, self.subtype, self.length,
+                                      dectype)
     return self.SUMMARY_PAT % (self.msgtype, self.subtype, self.length)
 
   def LogText(self):
