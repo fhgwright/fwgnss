@@ -63,6 +63,7 @@ UBX_DICT = {
     (1, 59): 'NAV-SVIN',
     (1, 60): 'NAV-RELPOSNED',
     (1, 66): 'NAV-SLAS',
+    (1, 67): 'NAV-SIG',  # Added manually for uBlox 9
     (1, 96): 'NAV-AOPSTATUS',
     (1, 97): 'NAV-EOE',
     (2, 19): 'RXM-SFRBX',
