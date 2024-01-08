@@ -1,1 +1,10 @@
-2023 DEC 31
+# End of validity for current tai-utc.dat (here)
+#
+# This is now set to be five months after the date referenced in
+# IERS Bulletin C, and hence one month prior to the next potential leap
+# second following the one referenced in that document.  This provides
+# a reasonable amount of time for an update, while stopping short of
+# the unknown leap second.
+
+# IERS Bulletin C #67 states no leap second on 2024-Jun-30.
+2024 NOV 30
