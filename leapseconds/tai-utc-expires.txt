@@ -6,5 +6,5 @@
 # a reasonable amount of time for an update, while stopping short of
 # the unknown leap second.
 
-# IERS Bulletin C #71 (6-Jan-2026) states no leap second on 2026-Jun-30.
-2026 NOV 30
+# IERS Bulletin C #72 (6-Jul-2026) states no leap second on 2026-Dec-31.
+2027 MAY 31
